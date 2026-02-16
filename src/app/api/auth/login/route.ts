@@ -1,39 +1,17 @@
 /**
  * Login API — validates email/password against env vars.
  * Sets a signed session cookie on success.
- *
- * Credentials stored as Vercel env vars:
- *   AUTH_EMAIL    = aiwithdhruv@gmail.com
- *   AUTH_PASSWORD = (your password)
  */
 
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import crypto from 'crypto';
 
-// Simple HMAC token — not JWT but sufficient for single-user auth
 function createSessionToken(email: string): string {
   const secret = process.env.AUTH_SECRET || process.env.AUTH_PASSWORD || 'angelina-default-secret';
   const payload = `${email}:${Date.now()}`;
   const signature = crypto.createHmac('sha256', secret).update(payload).digest('hex');
   return Buffer.from(`${payload}:${signature}`).toString('base64');
-}
-
-export function verifySessionToken(token: string): boolean {
-  try {
-    const secret = process.env.AUTH_SECRET || process.env.AUTH_PASSWORD || 'angelina-default-secret';
-    const decoded = Buffer.from(token, 'base64').toString('utf-8');
-    const parts = decoded.split(':');
-    if (parts.length < 3) return false;
-
-    const signature = parts.pop()!;
-    const payload = parts.join(':');
-    const expected = crypto.createHmac('sha256', secret).update(payload).digest('hex');
-
-    return crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expected));
-  } catch {
-    return false;
-  }
 }
 
 export async function POST(request: Request) {
@@ -51,7 +29,7 @@ export async function POST(request: Request) {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'lax',
-        maxAge: 7 * 24 * 3600, // 7 days
+        maxAge: 7 * 24 * 3600,
         path: '/',
       });
       return NextResponse.json({ success: true });
@@ -72,7 +50,7 @@ export async function POST(request: Request) {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
-      maxAge: 7 * 24 * 3600, // 7 days
+      maxAge: 7 * 24 * 3600,
       path: '/',
     });
 
