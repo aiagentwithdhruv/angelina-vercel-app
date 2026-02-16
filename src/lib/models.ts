@@ -56,6 +56,7 @@ export const TEXT_MODELS: TextModel[] = [
   { id: 'or:google/gemini-2.5-pro', label: 'Gemini 2.5 Pro (OR)', description: 'Via OpenRouter', provider: 'openrouter', routerId: 'google/gemini-2.5-pro' },
   { id: 'or:google/gemini-2.5-flash', label: 'Gemini 2.5 Flash (OR)', description: 'Fast + cheap via OR', provider: 'openrouter', routerId: 'google/gemini-2.5-flash' },
   { id: 'or:moonshotai/kimi-k2', label: 'Kimi K2 (OR)', description: '1T params via OR', provider: 'openrouter', routerId: 'moonshotai/kimi-k2' },
+  { id: 'or:z-ai/glm-5', label: 'GLM-5 (Z.ai)', description: 'Coding #3, 204K ctx, cheap', provider: 'openrouter', routerId: 'z-ai/glm-5' },
   { id: 'or:openai/gpt-4.1-mini', label: 'GPT-4.1 Mini (OR)', description: 'Via OpenRouter', provider: 'openrouter', routerId: 'openai/gpt-4.1-mini-2025-04-14' },
 ];
 
