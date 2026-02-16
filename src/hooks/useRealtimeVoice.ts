@@ -415,6 +415,7 @@ export function useRealtimeVoice(options: UseRealtimeVoiceOptions = {}): UseReal
           ws.send(JSON.stringify({
             type: "session.update",
             session: {
+              type: "realtime",
               modalities: ["audio", "text"],
               instructions: serverInstructions,
               voice: voice,

@@ -341,6 +341,7 @@ export function useAngelinaVoice(options: UseAngelinaVoiceOptions = {}): UseAnge
           ws.send(JSON.stringify({
             type: "session.update",
             session: {
+              type: "realtime",
               modalities: ["text", "audio"],
               voice: voice,
               instructions: `You are Angelina, a warm and helpful AI assistant. Be conversational and friendly.`,
