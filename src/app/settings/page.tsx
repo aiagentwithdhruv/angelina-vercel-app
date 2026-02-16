@@ -149,18 +149,26 @@ const apiConfigs: APIKeyConfig[] = [
   // Automation
   {
     id: 'n8n',
-    name: 'n8n',
-    description: 'Workflow automation, 400+ integrations',
+    name: 'n8n URL',
+    description: 'Workflow automation — paste your n8n instance URL',
     icon: <Workflow className="w-5 h-5" />,
-    placeholder: 'http://localhost:5678 or your n8n URL',
+    placeholder: 'https://your-n8n.com or http://localhost:5678',
+    category: 'automation'
+  },
+  {
+    id: 'n8n_api_key',
+    name: 'n8n API Key (optional)',
+    description: 'For authenticated n8n instances',
+    icon: <Workflow className="w-5 h-5" />,
+    placeholder: 'n8n API key (leave blank if not needed)',
     category: 'automation'
   },
   {
     id: 'mcp',
-    name: 'MCP Server',
-    description: 'Model Context Protocol for tool access',
+    name: 'MCP Server URL',
+    description: 'Model Context Protocol — discover & call external tools',
     icon: <Server className="w-5 h-5" />,
-    placeholder: 'http://localhost:3001 or MCP server URL',
+    placeholder: 'https://your-mcp-server.com or http://localhost:3001',
     category: 'automation'
   },
   // Integrations

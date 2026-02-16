@@ -211,6 +211,16 @@ function CommandCenterInner() {
       description: 'Get YouTube channel analytics and video performance data. Use when Dhruv asks about his YouTube channel, video stats, subscribers, views, trending analysis, or content strategy.',
       parameters: {},
     },
+    {
+      name: 'n8n_workflow',
+      description: 'Trigger an n8n automation workflow. Use when Dhruv says "trigger workflow", "run automation", "start n8n", or asks to automate something. Provide the webhook path name (e.g. "lead-gen", "daily-digest") and optional data payload.',
+      parameters: { workflow: { type: 'string', description: 'Webhook path or workflow name (e.g. "lead-gen")', required: true }, data: { type: 'object', description: 'Optional data payload to send to the workflow' }, mode: { type: 'string', description: '"production" (default) or "test" for test webhook' } },
+    },
+    {
+      name: 'mcp_call',
+      description: 'Interact with an MCP (Model Context Protocol) server. Use action="list" to discover available tools, or action="call" with a tool name to execute. Use when Dhruv asks to use external tools, plugins, or MCP capabilities.',
+      parameters: { action: { type: 'string', description: '"list" to see available tools, "call" to execute a tool', required: true }, tool: { type: 'string', description: 'Tool name to call (required for action=call)' }, arguments: { type: 'object', description: 'Arguments to pass to the tool' } },
+    },
   ];
 
   // Get a human-readable detail string for each tool result
@@ -241,6 +251,11 @@ function CommandCenterInner() {
         return result.stats ? `${result.stats.pending}P / ${result.stats.in_progress}IP / ${result.stats.completed}C` : 'Tasks listed';
       case 'youtube_analytics':
         return 'Channel stats loaded';
+      case 'n8n_workflow':
+        return result.success ? `Triggered: ${args?.workflow || 'workflow'}` : 'Trigger failed';
+      case 'mcp_call':
+        if (args?.action === 'list') return `Found ${result.tools?.length || 0} tools`;
+        return result.success ? `Called: ${args?.tool || 'tool'}` : 'MCP call failed';
       default:
         return result.success ? 'Completed' : 'Done';
     }
