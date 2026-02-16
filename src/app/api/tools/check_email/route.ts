@@ -10,6 +10,7 @@ import { withToolRetry } from '@/lib/tool-retry';
 
 export async function POST(request: NextRequest) {
   return withToolRetry(async () => {
+    try {
     const { count = 5, filter = 'unread' } = await request.json();
 
     // Get access token from cookies (auto-refreshes if needed)

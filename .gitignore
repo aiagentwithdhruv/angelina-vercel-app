@@ -72,3 +72,4 @@ android/build/
 
 # TypeScript incremental cache
 tsconfig.tsbuildinfo
+.vercel
