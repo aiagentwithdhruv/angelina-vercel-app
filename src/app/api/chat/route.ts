@@ -14,6 +14,7 @@ import { selectCostOptimizedModel } from '@/lib/cost-policy';
 import { evaluateToolApproval } from '@/lib/approval-gate';
 import { compactConversation, needsCompaction } from '@/lib/conversation-compactor';
 import { resilientCall } from '@/lib/resilient-provider';
+import { buildContextPulse } from '@/lib/context-pulse';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -538,6 +539,15 @@ export async function POST(request: NextRequest) {
     } catch (costErr) {
       console.warn('[Chat] Cost lookup failed (DB may be unavailable), continuing with defaults:', (costErr as Error).message);
     }
+
+    // Hard daily cap — prevent runaway bills
+    const HARD_CAP = Number(process.env.DAILY_COST_CAP_USD) || 2;
+    if (costTodayUsd >= HARD_CAP) {
+      return NextResponse.json(
+        { error: `Daily cost cap reached ($${costTodayUsd.toFixed(2)} / $${HARD_CAP}). Try again tomorrow or raise the cap in env vars.` },
+        { status: 429 },
+      );
+    }
     const costDecision = selectCostOptimizedModel({
       requestedModel: activeModel,
       userMessage: userText,
@@ -587,6 +597,17 @@ export async function POST(request: NextRequest) {
       }
     } catch (memErr) {
       console.warn('[Chat] Memory injection failed (DB may be unavailable), skipping:', (memErr as Error).message);
+    }
+
+    // ── 3.5 Context Pulse: time-awareness, pending tasks, spend ──
+    try {
+      const pulse = await buildContextPulse();
+      const sysIdx = messages.findIndex((m: any) => m.role === 'system');
+      if (sysIdx >= 0) {
+        messages[sysIdx].content += pulse;
+      }
+    } catch {
+      // Non-critical — skip silently
     }
 
     // ── 4. Conversation Compaction (summarize old messages if too long) ──

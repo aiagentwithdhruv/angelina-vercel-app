@@ -6,9 +6,10 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getGoogleAccessToken } from '@/lib/google-auth';
+import { withToolRetry } from '@/lib/tool-retry';
 
 export async function POST(request: NextRequest) {
-  try {
+  return withToolRetry(async () => {
     const { count = 5, filter = 'unread' } = await request.json();
 
     // Get access token from cookies (auto-refreshes if needed)
@@ -96,4 +97,5 @@ export async function POST(request: NextRequest) {
       emails: [],
     });
   }
+  }, 'check_email');
 }

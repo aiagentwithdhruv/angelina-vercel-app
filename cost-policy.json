@@ -1,7 +1,8 @@
 {
   "enabled": true,
-  "dailyBudgetUsd": 25,
-  "sessionBudgetUsd": 5,
+  "dailyBudgetUsd": 1,
+  "sessionBudgetUsd": 0.25,
+  "hardDailyCapUsd": 2,
   "estimatedInputTokens": 900,
   "estimatedOutputTokens": 500,
   "tiers": {
