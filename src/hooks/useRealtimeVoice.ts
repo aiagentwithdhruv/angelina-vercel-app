@@ -353,8 +353,14 @@ export function useRealtimeVoice(options: UseRealtimeVoiceOptions = {}): UseReal
           const errorMsg = data.error?.message || data.message || "Unknown error";
           const errorCode = data.error?.code || data.code || "";
           const fullError = errorCode ? `${errorCode}: ${errorMsg}` : errorMsg;
-          setError(fullError);
-          onError?.(fullError);
+          // Suppress known non-fatal session config errors (voice still works via fallback)
+          const nonFatal = /session\.(type|modalities|voice)|unknown_parameter|missing_required_parameter/i;
+          if (nonFatal.test(fullError)) {
+            console.warn("[Realtime] Non-fatal session config warning:", fullError);
+          } else {
+            setError(fullError);
+            onError?.(fullError);
+          }
           break;
           
         default:

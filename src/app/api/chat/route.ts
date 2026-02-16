@@ -504,24 +504,32 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const { messages, tools, model, source, userId, approvedTools } = body;
-    let activeModel = model || 'gpt-4.1';
+    const DEFAULT_MODEL = 'gpt-4.1';
+    let activeModel = model || DEFAULT_MODEL;
     let activeProvider = getProvider(activeModel);
     requestModel = activeModel;
     requestProvider = activeProvider;
 
-    // ── 1. Model Router: auto-route to optimal model based on complexity ──
+    // Did the user explicitly pick a model? If so, respect it.
+    const userExplicitModel = Boolean(model && model !== DEFAULT_MODEL);
+
     const lastUserMsg = [...messages].reverse().find((m: any) => m.role === 'user');
     const userText = lastUserMsg?.content || '';
-    const routing = getRoutedModel(activeModel, userText);
-    if (routing.routed) {
-      console.log(`[Model Router] ${routing.complexity} → ${routing.model} (was ${activeModel})`);
-      activeModel = routing.model;
-      activeProvider = getProvider(activeModel);
-      requestModel = activeModel;
-      requestProvider = activeProvider;
+
+    // ── 1. Model Router: auto-route only when user didn't explicitly choose ──
+    let routing = { routed: false, model: activeModel, complexity: '' };
+    if (!userExplicitModel) {
+      routing = getRoutedModel(activeModel, userText);
+      if (routing.routed) {
+        console.log(`[Model Router] ${routing.complexity} → ${routing.model} (was ${activeModel})`);
+        activeModel = routing.model;
+        activeProvider = getProvider(activeModel);
+        requestModel = activeModel;
+        requestProvider = activeProvider;
+      }
     }
 
-    // ── 1.5 Cost Policy Router (budget-aware model optimization) ──
+    // ── 1.5 Cost Policy Router (only when user didn't explicitly choose) ──
     let costTodayUsd = 0;
     let sessionCostUsd = 0;
     try {
@@ -537,7 +545,7 @@ export async function POST(request: NextRequest) {
       costTodayUsd,
       sessionCostUsd,
     });
-    if (costDecision.selectedModel !== activeModel) {
+    if (!userExplicitModel && costDecision.selectedModel !== activeModel) {
       console.log(
         `[Cost Router] ${activeModel} → ${costDecision.selectedModel} (${costDecision.reason})`,
       );

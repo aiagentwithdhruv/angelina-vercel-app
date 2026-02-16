@@ -234,9 +234,15 @@ export function useAngelinaVoice(options: UseAngelinaVoiceOptions = {}): UseAnge
 
         case "error":
           const errorMsg = data.error?.message || "Unknown error";
-          console.error("[Angelina] ❌ Error:", errorMsg);
-          setError(errorMsg);
-          onError?.(errorMsg);
+          // Suppress known non-fatal session config errors (voice still works)
+          const nonFatalPattern = /session\.(type|modalities|voice)|unknown_parameter|missing_required_parameter/i;
+          if (nonFatalPattern.test(errorMsg)) {
+            console.warn("[Angelina] Non-fatal session config warning:", errorMsg);
+          } else {
+            console.error("[Angelina] ❌ Error:", errorMsg);
+            setError(errorMsg);
+            onError?.(errorMsg);
+          }
           break;
       }
     } catch (err) {
