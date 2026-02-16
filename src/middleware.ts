@@ -9,8 +9,7 @@ import { NextRequest, NextResponse } from 'next/server';
 // Routes that don't need auth
 const PUBLIC_PATHS = [
   '/login',
-  '/api/auth/login',
-  '/api/auth/logout',
+  '/api/auth',           // All auth routes (login, logout, google oauth)
   '/api/telegram',
   '/api/worker/digest',
 ];
