@@ -215,6 +215,20 @@ function CommandCenterInner() {
       parameters: {},
     },
     {
+      name: 'github',
+      description: 'Access GitHub repos — list repos, read/write files, search code, manage issues. Use when Dhruv asks about his code, repos, wants to update a file, create an issue, or search across his GitHub.',
+      parameters: {
+        action: { type: 'string', description: 'list_repos, list_files, read_file, write_file, search_code, list_issues, create_issue', required: true },
+        repo: { type: 'string', description: 'Repo in owner/name format (e.g. aiagentwithdhruv/Angelina)' },
+        path: { type: 'string', description: 'File path within repo (e.g. src/lib/models.ts)' },
+        content: { type: 'string', description: 'File content for write_file' },
+        message: { type: 'string', description: 'Commit message for write_file' },
+        query: { type: 'string', description: 'Search query for search_code' },
+        title: { type: 'string', description: 'Issue title for create_issue' },
+        body: { type: 'string', description: 'Issue body for create_issue' },
+      },
+    },
+    {
       name: 'n8n_workflow',
       description: 'Trigger an n8n automation workflow. Use when Dhruv says "trigger workflow", "run automation", "start n8n", or asks to automate something. Provide the webhook path name (e.g. "lead-gen", "daily-digest") and optional data payload.',
       parameters: { workflow: { type: 'string', description: 'Webhook path or workflow name (e.g. "lead-gen")', required: true }, data: { type: 'object', description: 'Optional data payload to send to the workflow' }, mode: { type: 'string', description: '"production" (default) or "test" for test webhook' } },
@@ -254,6 +268,15 @@ function CommandCenterInner() {
         return result.stats ? `${result.stats.pending}P / ${result.stats.in_progress}IP / ${result.stats.completed}C` : 'Tasks listed';
       case 'youtube_analytics':
         return 'Channel stats loaded';
+      case 'github':
+        if (args?.action === 'list_repos') return `${result.repos?.length || 0} repos`;
+        if (args?.action === 'list_files') return `${result.files?.length || 0} files`;
+        if (args?.action === 'read_file') return `Read: ${args?.path || 'file'}`;
+        if (args?.action === 'write_file') return result.success ? `Wrote: ${args?.path}` : 'Write failed';
+        if (args?.action === 'search_code') return `${result.total || 0} results`;
+        if (args?.action === 'list_issues') return `${result.issues?.length || 0} issues`;
+        if (args?.action === 'create_issue') return result.success ? `Issue #${result.number}` : 'Create failed';
+        return result.success ? 'Done' : 'Failed';
       case 'n8n_workflow':
         return result.success ? `Triggered: ${args?.workflow || 'workflow'}` : 'Trigger failed';
       case 'mcp_call':

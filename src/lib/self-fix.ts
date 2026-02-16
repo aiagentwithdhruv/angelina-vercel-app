@@ -81,6 +81,24 @@ export function diagnoseToolFailure(
     }
   }
 
+  // ── GitHub ──
+  if (toolName === 'github') {
+    if (errLower.includes('not configured') || errLower.includes('token')) {
+      return {
+        canAutoFix: false,
+        fixAction: 'add_github_token',
+        userMessage: 'GitHub token not set. Go to Settings → Other Integrations and add your GitHub personal access token.',
+      };
+    }
+    if (errLower.includes('404') || errLower.includes('not found')) {
+      return {
+        canAutoFix: false,
+        fixAction: 'check_repo',
+        userMessage: `Repository or file not found. Check the repo name (should be owner/name format like "aiagentwithdhruv/Angelina") and file path.`,
+      };
+    }
+  }
+
   // ── Web search ──
   if (toolName === 'web_search') {
     if (errLower.includes('perplexity') || errLower.includes('api key')) {

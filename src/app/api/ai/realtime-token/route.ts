@@ -166,6 +166,22 @@ export async function POST(request: Request) {
           properties: {},
         },
       },
+      {
+        type: "function",
+        name: "github",
+        description: "Access GitHub repos — list repos, read/write files, search code, manage issues. Use when Dhruv asks about his code, repos, or wants to create an issue.",
+        parameters: {
+          type: "object",
+          properties: {
+            action: { type: "string", description: "list_repos, list_files, read_file, write_file, search_code, list_issues, create_issue" },
+            repo: { type: "string", description: "Repo in owner/name format" },
+            path: { type: "string", description: "File path within repo" },
+            query: { type: "string", description: "Search query for search_code" },
+            title: { type: "string", description: "Issue title for create_issue" },
+          },
+          required: ["action"],
+        },
+      },
     ];
 
     // Session configuration for OpenAI Realtime API (current schema)
