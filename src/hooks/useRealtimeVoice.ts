@@ -415,9 +415,7 @@ export function useRealtimeVoice(options: UseRealtimeVoiceOptions = {}): UseReal
           ws.send(JSON.stringify({
             type: "session.update",
             session: {
-              type: "realtime",
               instructions: serverInstructions,
-              voice: voice,
               input_audio_format: "pcm16",
               output_audio_format: "pcm16",
               input_audio_transcription: { model: "whisper-1", language: "en" },

@@ -58,23 +58,37 @@ export interface YouTubeDataStore {
   channelId: string | null;
 }
 
-// ── File I/O ──
+// ── Storage ──
+// Use /tmp on Vercel (read-only root fs) with in-memory fallback.
 
-const DATA_FILE = path.join(process.cwd(), 'youtube-data.json');
+const DATA_FILE = path.join(
+  typeof process !== 'undefined' && process.env.VERCEL ? '/tmp' : process.cwd(),
+  'youtube-data.json',
+);
 const CACHE_HOURS = 6;
 
+let memoryCache: YouTubeDataStore | null = null;
+
 function readStore(): YouTubeDataStore {
+  if (memoryCache) return memoryCache;
   try {
     if (!fs.existsSync(DATA_FILE)) return emptyStore();
     const raw = fs.readFileSync(DATA_FILE, 'utf-8');
-    return JSON.parse(raw) as YouTubeDataStore;
+    const data = JSON.parse(raw) as YouTubeDataStore;
+    memoryCache = data;
+    return data;
   } catch {
     return emptyStore();
   }
 }
 
 function writeStore(data: YouTubeDataStore): void {
-  fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2), 'utf-8');
+  memoryCache = data;
+  try {
+    fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2), 'utf-8');
+  } catch {
+    // Read-only filesystem (Vercel); data persists in memory for this invocation
+  }
 }
 
 function emptyStore(): YouTubeDataStore {
