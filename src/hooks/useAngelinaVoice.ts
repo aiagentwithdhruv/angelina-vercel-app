@@ -342,7 +342,6 @@ export function useAngelinaVoice(options: UseAngelinaVoiceOptions = {}): UseAnge
             type: "session.update",
             session: {
               type: "realtime",
-              modalities: ["text", "audio"],
               voice: voice,
               instructions: `You are Angelina, a warm and helpful AI assistant. Be conversational and friendly.`,
               input_audio_format: "pcm16",

@@ -78,9 +78,14 @@ export async function GET(request: Request) {
       });
     }
 
-    // Also persist to file — enables Telegram + server-side tool calls
+    // Also persist to file — enables Telegram + server-side tool calls.
+    // Vercel filesystem can be read-only; treat this as best-effort only.
     if (tokens.refresh_token) {
-      saveTokensToFile(tokens.access_token, tokens.refresh_token, tokens.expires_in || 3600);
+      try {
+        saveTokensToFile(tokens.access_token, tokens.refresh_token, tokens.expires_in || 3600);
+      } catch (fileErr) {
+        console.warn("[Google Auth] Token file persistence skipped:", (fileErr as Error).message);
+      }
     }
 
     console.log("[Google Auth] ✅ Successfully authenticated with Google");

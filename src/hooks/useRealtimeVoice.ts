@@ -416,7 +416,6 @@ export function useRealtimeVoice(options: UseRealtimeVoiceOptions = {}): UseReal
             type: "session.update",
             session: {
               type: "realtime",
-              modalities: ["audio", "text"],
               instructions: serverInstructions,
               voice: voice,
               input_audio_format: "pcm16",
