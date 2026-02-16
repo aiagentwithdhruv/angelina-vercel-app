@@ -16,10 +16,26 @@ function isAuthorized(request: NextRequest): boolean {
   return false;
 }
 
+async function getTelegramCreds(): Promise<{ botToken: string; chatId: string } | null> {
+  // Env vars first (for cron jobs which have no cookies)
+  let botToken = process.env.TELEGRAM_BOT_TOKEN;
+  let chatId = process.env.TELEGRAM_CHAT_ID;
+  if (botToken && chatId) return { botToken, chatId };
+  // Fallback: cookies (set via Settings UI)
+  try {
+    const { cookies } = await import('next/headers');
+    const cookieStore = await cookies();
+    botToken = botToken || cookieStore.get('api_key_telegram_bot_token')?.value;
+    chatId = chatId || cookieStore.get('api_key_telegram_chat_id')?.value;
+  } catch { /* cron context — no cookies */ }
+  if (botToken && chatId) return { botToken, chatId };
+  return null;
+}
+
 async function pushToTelegram(text: string): Promise<boolean> {
-  const botToken = process.env.TELEGRAM_BOT_TOKEN;
-  const chatId = process.env.TELEGRAM_CHAT_ID;
-  if (!botToken || !chatId) return false;
+  const creds = await getTelegramCreds();
+  if (!creds) return false;
+  const { botToken, chatId } = creds;
   try {
     const res = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
       method: 'POST',

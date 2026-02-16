@@ -120,6 +120,23 @@ const apiConfigs: APIKeyConfig[] = [
     placeholder: '+91...',
     category: 'automation'
   },
+  // Telegram
+  {
+    id: 'telegram_bot_token',
+    name: 'Telegram Bot Token',
+    description: 'For proactive digest & notifications',
+    icon: <Zap className="w-5 h-5" />,
+    placeholder: '123456:ABC...',
+    category: 'automation'
+  },
+  {
+    id: 'telegram_chat_id',
+    name: 'Telegram Chat ID',
+    description: 'Your Telegram chat ID for push messages',
+    icon: <Zap className="w-5 h-5" />,
+    placeholder: '637313836',
+    category: 'automation'
+  },
   // Search
   {
     id: 'perplexity',

@@ -32,12 +32,15 @@ export async function GET() {
     if (process.env.TWILIO_AUTH_TOKEN) status.twilio_token = 'connected';
     if (process.env.TWILIO_PHONE_NUMBER) status.twilio_phone = 'connected';
     if (process.env.DHRUV_PHONE_NUMBER) status.dhruv_phone = 'connected';
+    if (process.env.TELEGRAM_BOT_TOKEN) status.telegram_bot_token = 'connected';
+    if (process.env.TELEGRAM_CHAT_ID) status.telegram_chat_id = 'connected';
 
     // Check saved API keys in cookies
     const savedKeys = [
       'openai', 'anthropic', 'openrouter', 'gemini', 'groq', 'moonshot',
       'perplexity', 'github', 'clickup', 'n8n', 'mcp',
       'twilio_sid', 'twilio_token', 'twilio_phone', 'dhruv_phone',
+      'telegram_bot_token', 'telegram_chat_id',
     ];
 
     for (const keyId of savedKeys) {
