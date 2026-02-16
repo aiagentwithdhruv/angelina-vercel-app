@@ -1,0 +1,74 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Editor directories and files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Node
+node_modules/
+
+# Next.js
+.next/
+out/
+
+# Production
+build/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Logs
+*.log
+logs/
+npm-debug.log*
+
+# Temporary files
+*.tmp
+*.temp
+
+# Usage tracking data (local only)
+usage-data.json
+
+# Revenue and analytics local files
+revenue-data.json
+youtube-data.json
+
+# Memory data (local only)
+memory-data.json
+
+# Google OAuth tokens (local only, contains secrets)
+google-tokens.json
+
+# Billing manual overrides (local only)
+billing-overrides.json
+
+# Tasks data (local only)
+tasks-data.json
+
+# Certificates (self-signed SSL)
+certificates/
+
+# Android build artifacts
+android/.gradle/
+android/app/build/
+android/build/
+
+# Capacitor
+*.apk
+
+# TypeScript incremental cache
+tsconfig.tsbuildinfo

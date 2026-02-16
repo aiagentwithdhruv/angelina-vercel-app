@@ -1,0 +1,17 @@
+{
+  "framework": "nextjs",
+  "buildCommand": "npm run build",
+  "installCommand": "npm install",
+  "functions": {
+    "src/app/api/chat/route.ts": {
+      "maxDuration": 60
+    },
+    "src/app/api/worker/digest/route.ts": {
+      "maxDuration": 60
+    },
+    "src/app/api/telegram/route.ts": {
+      "maxDuration": 60
+    }
+  }
+}
+
