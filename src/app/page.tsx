@@ -11,6 +11,8 @@ import { ChatInput } from '@/components/ui/input';
 import { VoiceFAB } from '@/components/ui/voice-fab';
 import { useRealtimeVoice } from '@/hooks/useRealtimeVoice';
 import { ANGELINA_SYSTEM_PROMPT } from '@/lib/angelina-context';
+import { detectUpgradeNeeded, UpgradeSuggestion } from '@/lib/smart-upgrade';
+import { diagnoseToolFailure } from '@/lib/self-fix';
 import { TEXT_MODELS, VOICE_MODELS, DEFAULT_TEXT_MODEL, DEFAULT_VOICE_MODEL, TextModelId, VoiceModelId, PROVIDER_LABELS } from '@/lib/models';
 import { ModelSelector } from '@/components/ui/model-selector';
 
@@ -37,6 +39,7 @@ function CommandCenterInner() {
   const [showHero, setShowHero] = useState(true);
   const [heroGreeting, setHeroGreeting] = useState('');
   const [pendingTaskCount, setPendingTaskCount] = useState(0);
+  const [upgradePrompt, setUpgradePrompt] = useState<UpgradeSuggestion & { pendingMessage: string } | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Tool name → human-readable titles
@@ -279,7 +282,7 @@ function CommandCenterInner() {
     return history;
   }, []);
 
-  // Execute tool calls and return results
+  // Execute tool calls with self-fix diagnostics
   const executeTools = useCallback(async (toolCalls: any[]) => {
     const toolResults = [];
     for (const toolCall of toolCalls) {
@@ -289,12 +292,34 @@ function CommandCenterInner() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(toolCall.arguments || {}),
         });
-        const toolData = await toolResponse.json();
+        let toolData = await toolResponse.json();
+
+        // Self-fix: if tool failed, diagnose and optionally retry
+        if (toolData.error) {
+          const fix = diagnoseToolFailure(toolCall.name, toolData.error, toolCall.arguments || {});
+
+          if (fix.canAutoFix && fix.retryWithArgs) {
+            // Auto-retry with corrected args
+            const retryRes = await fetch(`/api/tools/${toolCall.name}`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(fix.retryWithArgs),
+            });
+            toolData = await retryRes.json();
+            toolData._selfFixed = true;
+            toolData._fixAction = fix.fixAction;
+          } else {
+            // Attach diagnostic info so AI gives helpful response
+            toolData._diagnosis = fix.userMessage;
+            toolData._fixAction = fix.fixAction;
+          }
+        }
+
         toolResults.push({ tool: toolCall.name, args: toolCall.arguments, result: toolData });
 
         const title = TOOL_TITLES[toolCall.name] || toolCall.name;
         const detail = toolData.error
-          ? `Error: ${toolData.error}`
+          ? toolData._diagnosis || `Error: ${toolData.error}`
           : getToolDetail(toolCall.name, toolCall.arguments, toolData);
         addActivity(toolCall.name, title, detail, toolData.error ? 'error' : 'success');
       } catch {
@@ -315,11 +340,44 @@ function CommandCenterInner() {
       .catch(() => {});
   }, []);
 
+  // Track one-shot model override for upgrade approval
+  const upgradeModelRef = useRef<string | null>(null);
+
+  const handleUpgradeApproved = useCallback(() => {
+    if (!upgradePrompt) return;
+    upgradeModelRef.current = upgradePrompt.suggestedModel;
+    setInputValue(upgradePrompt.pendingMessage);
+    setUpgradePrompt(null);
+    // Trigger send on next tick (inputValue just updated)
+    setTimeout(() => {
+      const btn = document.querySelector('[data-send-btn]') as HTMLButtonElement;
+      btn?.click();
+    }, 50);
+  }, [upgradePrompt]);
+
+  const handleUpgradeDeclined = useCallback(() => {
+    if (!upgradePrompt) return;
+    setInputValue(upgradePrompt.pendingMessage);
+    setUpgradePrompt(null);
+    setTimeout(() => {
+      const btn = document.querySelector('[data-send-btn]') as HTMLButtonElement;
+      btn?.click();
+    }, 50);
+  }, [upgradePrompt]);
+
   // Handle text message send — with full conversation history + agentic tool loop
   const handleSendMessage = async () => {
     if (!inputValue.trim()) return;
 
     const userMsg = inputValue;
+
+    // Smart upgrade check — suggest better model for complex tasks
+    const upgrade = detectUpgradeNeeded(userMsg, textModel);
+    if (upgrade.shouldUpgrade && !upgradePrompt) {
+      setUpgradePrompt({ ...upgrade, pendingMessage: userMsg });
+      return; // Wait for approval
+    }
+
     setShowHero(false);
     addMessage('user', userMsg);
     setInputValue('');
@@ -340,13 +398,15 @@ function CommandCenterInner() {
       const MAX_TOOL_ROUNDS = 5;
 
       for (let round = 0; round < MAX_TOOL_ROUNDS; round++) {
+        const effectiveModel = (round === 0 && upgradeModelRef.current) ? upgradeModelRef.current : textModel;
+        if (round === 0) upgradeModelRef.current = null; // Clear one-shot override
         const response = await fetch('/api/chat', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             messages: loopMessages,
             tools: chatTools,
-            model: textModel,
+            model: effectiveModel,
           }),
         });
         const data = await response.json();
@@ -791,6 +851,27 @@ function CommandCenterInner() {
             )}
           </div>
 
+          {/* Upgrade Approval Banner */}
+          {upgradePrompt && (
+            <div className="mx-6 mb-2 p-3 rounded-lg bg-gradient-to-r from-cyan-900/30 to-purple-900/30 border border-cyan-500/40">
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex-1">
+                  <p className="text-sm text-cyan-300 font-medium">Upgrade model for this task?</p>
+                  <p className="text-xs text-gray-400 mt-1">{upgradePrompt.reason}</p>
+                  <p className="text-xs text-gray-500 mt-0.5">Switch to <span className="text-white font-medium">{upgradePrompt.suggestedLabel}</span> · Extra cost: {upgradePrompt.estimatedExtraCost}</p>
+                </div>
+                <div className="flex gap-2 flex-shrink-0">
+                  <button onClick={handleUpgradeApproved} className="px-3 py-1.5 text-xs bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 rounded-lg hover:bg-cyan-500/30 transition-colors">
+                    Approve
+                  </button>
+                  <button onClick={handleUpgradeDeclined} className="px-3 py-1.5 text-xs bg-gray-700/50 text-gray-400 border border-gray-600/40 rounded-lg hover:bg-gray-600/50 transition-colors">
+                    Use current
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Input Area - Enhanced with glow container */}
           <div className="border-t border-steel-dark">
             <div className="px-6 pt-4 pb-6">
@@ -807,6 +888,7 @@ function CommandCenterInner() {
                   {/* Send Button or Voice FAB */}
                   {inputValue.trim() ? (
                     <button
+                      data-send-btn
                       onClick={handleSendMessage}
                       className="w-12 h-12 rounded-full bg-gradient-to-br from-cyan-glow to-cyan-teal flex items-center justify-center flex-shrink-0 transition-all hover:scale-105"
                       style={{ boxShadow: '0 0 25px rgba(0, 200, 232, 0.35)' }}
