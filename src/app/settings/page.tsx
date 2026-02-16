@@ -149,10 +149,10 @@ const apiConfigs: APIKeyConfig[] = [
   // Automation
   {
     id: 'n8n',
-    name: 'n8n URL',
-    description: 'Workflow automation — paste your n8n instance URL',
+    name: 'n8n Instance URL',
+    description: 'Your n8n URL (cloud or self-hosted)',
     icon: <Workflow className="w-5 h-5" />,
-    placeholder: 'https://your-n8n.com or http://localhost:5678',
+    placeholder: 'https://your-n8n.app.n8n.cloud',
     category: 'automation'
   },
   {
