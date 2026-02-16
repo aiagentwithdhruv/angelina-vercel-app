@@ -79,6 +79,47 @@ const apiConfigs: APIKeyConfig[] = [
     placeholder: 'gsk_...',
     category: 'ai'
   },
+  {
+    id: 'moonshot',
+    name: 'Moonshot / Kimi',
+    description: 'Kimi K2.5, K2 Thinking, V1 128K',
+    icon: <Sparkles className="w-5 h-5" />,
+    placeholder: 'sk-...',
+    category: 'ai'
+  },
+  // Calling
+  {
+    id: 'twilio_sid',
+    name: 'Twilio Account SID',
+    description: 'For "Call Me" feature (Twilio)',
+    icon: <Zap className="w-5 h-5" />,
+    placeholder: 'AC...',
+    category: 'automation'
+  },
+  {
+    id: 'twilio_token',
+    name: 'Twilio Auth Token',
+    description: 'Twilio auth token',
+    icon: <Zap className="w-5 h-5" />,
+    placeholder: 'your auth token',
+    category: 'automation'
+  },
+  {
+    id: 'twilio_phone',
+    name: 'Twilio Phone Number',
+    description: 'Your Twilio phone number',
+    icon: <Zap className="w-5 h-5" />,
+    placeholder: '+1...',
+    category: 'automation'
+  },
+  {
+    id: 'dhruv_phone',
+    name: 'Your Phone Number',
+    description: 'Where Angelina calls you',
+    icon: <Zap className="w-5 h-5" />,
+    placeholder: '+91...',
+    category: 'automation'
+  },
   // Search
   {
     id: 'perplexity',

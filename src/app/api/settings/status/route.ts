@@ -23,15 +23,21 @@ export async function GET() {
     if (process.env.GOOGLE_GEMINI_API_KEY) status.gemini = 'connected';
     if (process.env.PERPLEXITY_API_KEY) status.perplexity = 'connected';
     if (process.env.GROQ_API_KEY) status.groq = 'connected';
+    if (process.env.MOONSHOT_API_KEY) status.moonshot = 'connected';
     if (process.env.GITHUB_TOKEN) status.github = 'connected';
     if (process.env.CLICKUP_API_KEY) status.clickup = 'connected';
     if (process.env.N8N_URL) status.n8n = 'connected';
     if (process.env.MCP_SERVER_URL) status.mcp = 'connected';
+    if (process.env.TWILIO_ACCOUNT_SID) status.twilio_sid = 'connected';
+    if (process.env.TWILIO_AUTH_TOKEN) status.twilio_token = 'connected';
+    if (process.env.TWILIO_PHONE_NUMBER) status.twilio_phone = 'connected';
+    if (process.env.DHRUV_PHONE_NUMBER) status.dhruv_phone = 'connected';
 
     // Check saved API keys in cookies
     const savedKeys = [
-      'openai', 'anthropic', 'openrouter', 'gemini', 'groq',
-      'perplexity', 'github', 'clickup', 'n8n', 'mcp'
+      'openai', 'anthropic', 'openrouter', 'gemini', 'groq', 'moonshot',
+      'perplexity', 'github', 'clickup', 'n8n', 'mcp',
+      'twilio_sid', 'twilio_token', 'twilio_phone', 'dhruv_phone',
     ];
 
     for (const keyId of savedKeys) {

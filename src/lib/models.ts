@@ -34,6 +34,8 @@ export const TEXT_MODELS: TextModel[] = [
 
   // ── Moonshot / Kimi (direct) ──
   { id: 'kimi-k2.5', label: 'Kimi K2.5', description: 'Visual coding SOTA', provider: 'moonshot' },
+  { id: 'kimi-k2-thinking', label: 'Kimi K2 Thinking', description: '1T params deep reasoning', provider: 'moonshot' },
+  { id: 'moonshot-v1-128k', label: 'Moonshot V1 128K', description: '128K context window', provider: 'moonshot' },
 
   // ── Groq (direct) ──
   { id: 'groq:llama-3.3-70b-versatile', label: 'Groq Llama 3.3 70B', description: 'Low-cost fast inference', provider: 'groq' },

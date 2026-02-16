@@ -5,16 +5,28 @@
  */
 
 import { NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
+
+async function getCred(envKey: string, cookieId: string): Promise<string | undefined> {
+  const envVal = process.env[envKey];
+  if (envVal) return envVal;
+  try {
+    const cookieStore = await cookies();
+    return cookieStore.get(`api_key_${cookieId}`)?.value;
+  } catch {
+    return undefined;
+  }
+}
 
 // Twilio direct call — just speaks the message and hangs up
 async function callViaTwilio(message: string, type: string) {
-  const accountSid = process.env.TWILIO_ACCOUNT_SID;
-  const authToken = process.env.TWILIO_AUTH_TOKEN;
-  const twilioNumber = process.env.TWILIO_PHONE_NUMBER;
-  const dhruvPhone = process.env.DHRUV_PHONE_NUMBER;
+  const accountSid = await getCred('TWILIO_ACCOUNT_SID', 'twilio_sid');
+  const authToken = await getCred('TWILIO_AUTH_TOKEN', 'twilio_token');
+  const twilioNumber = await getCred('TWILIO_PHONE_NUMBER', 'twilio_phone');
+  const dhruvPhone = await getCred('DHRUV_PHONE_NUMBER', 'dhruv_phone');
 
   if (!accountSid || !authToken || !twilioNumber || !dhruvPhone) {
-    throw new Error('Twilio credentials not configured in .env.local');
+    throw new Error('Twilio credentials not configured. Add them in Settings → Automation & Tools.');
   }
 
   // TwiML: Speak the message in a nice voice, then hang up
