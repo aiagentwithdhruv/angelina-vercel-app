@@ -37,9 +37,11 @@ export const TEXT_MODELS: TextModel[] = [
   { id: 'kimi-k2-thinking', label: 'Kimi K2 Thinking', description: '1T params deep reasoning', provider: 'moonshot' },
   { id: 'moonshot-v1-128k', label: 'Moonshot V1 128K', description: '128K context window', provider: 'moonshot' },
 
-  // ── Groq (direct) ──
+  // ── Groq (direct — ultra fast inference) ──
   { id: 'groq:llama-3.3-70b-versatile', label: 'Groq Llama 3.3 70B', description: 'Low-cost fast inference', provider: 'groq' },
-  { id: 'groq:mixtral-8x7b-32768', label: 'Groq Mixtral 8x7B', description: 'Budget model for simple tasks', provider: 'groq' },
+  { id: 'groq:llama-4-scout-17b-16e-instruct', label: 'Groq Llama 4 Scout', description: 'Meta latest, fast', provider: 'groq' },
+  { id: 'groq:mixtral-8x7b-32768', label: 'Groq Mixtral 8x7B', description: 'Budget model', provider: 'groq' },
+  { id: 'groq:gemma2-9b-it', label: 'Groq Gemma2 9B', description: 'Google small, cheap', provider: 'groq' },
 
   // ── OpenRouter (via OpenRouter API) ──
   { id: 'or:deepseek/deepseek-v3.2', label: 'DeepSeek V3.2', description: 'GPT-5 class, cheap', provider: 'openrouter', routerId: 'deepseek/deepseek-v3.2' },
@@ -52,6 +54,8 @@ export const TEXT_MODELS: TextModel[] = [
   { id: 'or:google/gemini-3-flash-preview', label: 'Gemini 3 Flash Preview', description: 'Latest Gemini, fast', provider: 'openrouter', routerId: 'google/gemini-3-flash-preview' },
   { id: 'or:google/gemini-3-pro-preview', label: 'Gemini 3 Pro Preview', description: 'Latest Gemini, powerful', provider: 'openrouter', routerId: 'google/gemini-3-pro-preview' },
   { id: 'or:google/gemini-2.5-pro', label: 'Gemini 2.5 Pro (OR)', description: 'Via OpenRouter', provider: 'openrouter', routerId: 'google/gemini-2.5-pro' },
+  { id: 'or:google/gemini-2.5-flash', label: 'Gemini 2.5 Flash (OR)', description: 'Fast + cheap via OR', provider: 'openrouter', routerId: 'google/gemini-2.5-flash' },
+  { id: 'or:moonshotai/kimi-k2', label: 'Kimi K2 (OR)', description: '1T params via OR', provider: 'openrouter', routerId: 'moonshotai/kimi-k2' },
   { id: 'or:openai/gpt-4.1-mini', label: 'GPT-4.1 Mini (OR)', description: 'Via OpenRouter', provider: 'openrouter', routerId: 'openai/gpt-4.1-mini-2025-04-14' },
 ];
 

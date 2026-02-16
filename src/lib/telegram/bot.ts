@@ -320,18 +320,31 @@ export function getBot(): Bot {
     const args = ctx.match?.trim();
 
     if (!args) {
-      // Show current model + available options
       const currentModel = TEXT_MODELS.find(m => m.id === session.model);
-      const modelList = TEXT_MODELS.slice(0, 10).map(m =>
-        `${m.id === session.model ? '> ' : '  '} ${m.label} (${m.description})`
-      ).join('\n');
+      const groups: Record<string, typeof TEXT_MODELS> = {};
+      for (const m of TEXT_MODELS) {
+        const g = m.provider;
+        if (!groups[g]) groups[g] = [];
+        groups[g].push(m);
+      }
+      const labels: Record<string, string> = {
+        openai: '🟢 OpenAI', anthropic: '🟣 Claude', google: '🔵 Gemini',
+        openrouter: '🌐 OpenRouter', moonshot: '🌙 Moonshot/Kimi',
+        groq: '⚡ Groq', perplexity: '🔍 Perplexity',
+      };
+      const lines: string[] = [`Current: ${currentModel?.label || session.model}\n`];
+      for (const [provider, models] of Object.entries(groups)) {
+        lines.push(`${labels[provider] || provider}:`);
+        for (const m of models) {
+          const marker = m.id === session.model ? '▸ ' : '  ';
+          lines.push(`${marker}${m.id} — ${m.label}`);
+        }
+        lines.push('');
+      }
+      lines.push('Switch: /model <model-id>');
+      lines.push('Example: /model kimi-k2.5');
 
-      await ctx.reply(
-        `Current model: ${currentModel?.label || session.model}\n\n` +
-        `Top models:\n${modelList}\n\n` +
-        `Switch: /model <model-id>\n` +
-        `Example: /model gpt-4.1-mini`
-      );
+      await ctx.reply(lines.join('\n'));
       return;
     }
 
