@@ -7,9 +7,11 @@
 import { NextResponse } from "next/server";
 import { getGoogleAuthUrl } from "@/lib/google-services";
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
-    const authUrl = getGoogleAuthUrl();
+    const requestUrl = new URL(request.url);
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || requestUrl.origin;
+    const authUrl = getGoogleAuthUrl(baseUrl);
     console.log("[Google Auth] Redirecting to Google OAuth...");
     return NextResponse.redirect(authUrl);
   } catch (error) {

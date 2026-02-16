@@ -170,6 +170,7 @@ export async function POST(request: Request) {
 
     // Session configuration for OpenAI Realtime API (flat format)
     const sessionConfig = {
+      type: "realtime",
       model: REALTIME_MODEL,
       modalities: ["audio", "text"],
       instructions,

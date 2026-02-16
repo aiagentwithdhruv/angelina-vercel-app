@@ -404,11 +404,11 @@ export const docs = {
 // ============================================
 // AUTH HELPER
 // ============================================
-export function getGoogleAuthUrl() {
+export function getGoogleAuthUrl(baseUrlOverride?: string) {
   const clientId = process.env.GOOGLE_CLIENT_ID;
   if (!clientId) throw new Error('Google Client ID not configured');
 
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+  const baseUrl = (baseUrlOverride || process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000').replace(/\/$/, '');
   const redirectUri = `${baseUrl}/api/auth/google/callback`;
 
   const params = new URLSearchParams({
