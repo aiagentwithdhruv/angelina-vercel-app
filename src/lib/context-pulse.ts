@@ -9,6 +9,9 @@
 
 import { getAllTasks } from '@/lib/tasks-store';
 import { getCostToday } from '@/lib/usage-store';
+import { buildConfidenceContext } from '@/lib/confidence';
+import { getPreferenceTracker } from '@/lib/preference-tracker';
+import { buildGoalsContext } from '@/lib/goals-store';
 
 function getIndiaTime(): Date {
   return new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }));
@@ -42,7 +45,7 @@ const SLOT_HINTS: Record<string, string> = {
     "Night time. Quick chats only. Don't start big projects. Encourage rest if needed.",
 };
 
-export async function buildContextPulse(): Promise<string> {
+export async function buildContextPulse(userMessage?: string): Promise<string> {
   const now = getIndiaTime();
   const hour = now.getHours();
   const slot = getGreetingSlot(hour);
@@ -111,6 +114,23 @@ export async function buildContextPulse(): Promise<string> {
   if (dayNum === 0 || dayNum === 6) {
     lines.push('It\'s the weekend. Be more casual and relaxed. Don\'t push work unless he brings it up.');
   }
+
+  // Confidence scoring
+  if (userMessage) {
+    lines.push(buildConfidenceContext(userMessage));
+  }
+
+  // Active goals
+  try {
+    const goalsCtx = buildGoalsContext();
+    if (goalsCtx) lines.push(goalsCtx);
+  } catch { /* non-critical */ }
+
+  // Learned preferences
+  try {
+    const prefContext = getPreferenceTracker().buildPreferenceContext();
+    if (prefContext) lines.push(prefContext);
+  } catch { /* non-critical */ }
 
   lines.push('═══════════════════════════════════════════════════════════');
 

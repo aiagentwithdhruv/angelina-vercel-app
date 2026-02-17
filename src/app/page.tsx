@@ -215,6 +215,20 @@ function CommandCenterInner() {
       parameters: {},
     },
     {
+      name: 'goals',
+      description: 'Set, update, or list goals/OKRs. Use when Dhruv mentions goals, targets, milestones, revenue targets, or says "I want to achieve". Actions: "set" (new goal), "update" (progress 0-100 or status), "list" (show all).',
+      parameters: {
+        action: { type: 'string', description: 'set, update, or list', required: true },
+        title: { type: 'string', description: 'Goal title' },
+        description: { type: 'string', description: 'Goal details' },
+        target: { type: 'string', description: 'Target metric (e.g. "10K revenue")' },
+        deadline: { type: 'string', description: 'Deadline (e.g. "March 2026")' },
+        progress: { type: 'number', description: 'Progress 0-100 (for update)' },
+        status: { type: 'string', description: 'active, completed, or paused (for update)' },
+        goal_id: { type: 'string', description: 'Goal ID or title to match (for update)' },
+      },
+    },
+    {
       name: 'github',
       description: 'Access GitHub repos — list repos, read/write files, search code, manage issues. Use when Dhruv asks about his code, repos, wants to update a file, create an issue, or search across his GitHub.',
       parameters: {
@@ -268,6 +282,10 @@ function CommandCenterInner() {
         return result.stats ? `${result.stats.pending}P / ${result.stats.in_progress}IP / ${result.stats.completed}C` : 'Tasks listed';
       case 'youtube_analytics':
         return 'Channel stats loaded';
+      case 'goals':
+        if (args?.action === 'list') return `${result.summary?.active || 0} active, ${result.summary?.completed || 0} done`;
+        if (args?.action === 'set') return `Goal set: ${args?.title || ''}`;
+        return result.success ? `Updated: ${result.goal?.title || 'goal'}` : 'Update failed';
       case 'github':
         if (args?.action === 'list_repos') return `${result.repos?.length || 0} repos`;
         if (args?.action === 'list_files') return `${result.files?.length || 0} files`;

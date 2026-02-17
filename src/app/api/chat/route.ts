@@ -15,6 +15,8 @@ import { evaluateToolApproval } from '@/lib/approval-gate';
 import { compactConversation, needsCompaction } from '@/lib/conversation-compactor';
 import { resilientCall } from '@/lib/resilient-provider';
 import { buildContextPulse } from '@/lib/context-pulse';
+import { checkBudgetAlert } from '@/lib/proactive-push';
+import { getPreferenceTracker } from '@/lib/preference-tracker';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -601,7 +603,7 @@ export async function POST(request: NextRequest) {
 
     // ── 3.5 Context Pulse: time-awareness, pending tasks, spend ──
     try {
-      const pulse = await buildContextPulse();
+      const pulse = await buildContextPulse(userText);
       const sysIdx = messages.findIndex((m: any) => m.role === 'system');
       if (sysIdx >= 0) {
         messages[sysIdx].content += pulse;
@@ -750,6 +752,15 @@ export async function POST(request: NextRequest) {
         routingReason,
         estimatedCost,
       });
+      // Budget alert check (non-blocking)
+      checkBudgetAlert(costTodayUsd + cost).catch(() => {});
+      // Preference tracking (non-blocking)
+      try {
+        getPreferenceTracker().record(
+          modelForPricing,
+          finalResult.toolCalls ? finalResult.toolCalls.map((tc: any) => tc.name) : [],
+        );
+      } catch { /* non-critical */ }
     } catch (logErr) {
       console.warn('[Chat] Usage logging failed (DB may be unavailable):', (logErr as Error).message);
     }
