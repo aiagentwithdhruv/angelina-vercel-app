@@ -14,6 +14,13 @@ const PUBLIC_PATHS = [
   '/api/worker/digest',
 ];
 
+// Internal API key for server-to-server calls (Telegram bot → /api/chat)
+function hasInternalAuth(request: NextRequest): boolean {
+  const internalKey = request.headers.get('x-internal-key');
+  const secret = process.env.AUTH_PASSWORD;
+  return Boolean(internalKey && secret && internalKey === secret);
+}
+
 const SKIP_PREFIXES = [
   '/_next/',
   '/icons/',
@@ -68,6 +75,11 @@ export async function middleware(request: NextRequest) {
   const authEmail = process.env.AUTH_EMAIL;
   const authPassword = process.env.AUTH_PASSWORD;
   if (!authEmail || !authPassword) {
+    return NextResponse.next();
+  }
+
+  // Allow internal server-to-server calls (Telegram bot, digest cron)
+  if (hasInternalAuth(request)) {
     return NextResponse.next();
   }
 

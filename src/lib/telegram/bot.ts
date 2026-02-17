@@ -38,6 +38,7 @@ interface UserSession {
 const TELEGRAM_MAX_MSG = 4096;
 const SESSION_TTL = 4 * 60 * 60 * 1000; // 4 hours
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+const INTERNAL_KEY = process.env.AUTH_PASSWORD || '';
 
 // Allowed user IDs (comma-separated in env var)
 function getAllowedUsers(): Set<number> {
@@ -113,7 +114,7 @@ async function callAngelinaChat(
   try {
     const res = await fetch(`${BASE_URL}/api/chat`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'x-internal-key': INTERNAL_KEY },
       body: JSON.stringify({
         messages,
         tools: Object.values(tools),
@@ -137,7 +138,7 @@ async function executeTool(toolName: string, args: any): Promise<any> {
   try {
     const res = await fetch(`${BASE_URL}/api/tools/${toolName}`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'x-internal-key': INTERNAL_KEY },
       body: JSON.stringify(args),
     });
     return await res.json();
