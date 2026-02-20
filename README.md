@@ -1,156 +1,201 @@
-# Angelina AI System
+# Angelina AI
 
-> A world-class, future-proof AI operating system that can talk, see, remember, plan, and execute tasks end-to-end.
+> Personal AI operating system with voice, memory, 16+ tools, and cost-aware multi-provider routing — deployed on Vercel.
 
-**Built by:** [Dhruv Tomar](https://linkedin.com/in/aiwithdhruv) | **Brand:** [AiwithDhruv](https://agenticaisolutonshub.com/)
-
-> Deploy-ready: Postgres + Supabase, cost-aware routing, hybrid Vercel/VPS.
+**Built by:** [Dhruv Tomar](https://linkedin.com/in/aiwithdhruv) | [AiwithDhruv](https://github.com/aiagentwithdhruv)
 
 ---
 
-## 🎯 Vision
+## What It Does
 
-Build a personal and business AI operating system with:
-- **Voice-first interaction** with real-time conversation and interruption handling
-- **Video avatar** for human-like presence
-- **Persistent memory** (short-term + long-term + knowledge graph)
-- **Agentic automation** across tools and apps (MCP, n8n, APIs)
-- **Multi-modal inputs** (voice, text, vision)
+Angelina is a full-stack AI assistant that connects to 7 LLM providers, remembers conversations, manages tasks, reads your email, checks your calendar, searches the web, triggers automations, and talks to you in real-time voice — all from a single interface.
 
 ---
 
-## 📁 Repository Structure
-
-```
-Angelina/
-├── README.md                    # This file
-├── ANGELINA-SYSTEM-PROMPT.md    # Core system prompt (v0.1)
-├── PRD-TECH-STACK.md           # Product requirements + tech stack
-├── REFERENCE-IMPLEMENTATIONS.md # Research and patterns
-├── Social Media Agent/          # Automated content posting
-│   ├── OVERVIEW.md
-│   ├── PROMPTS.md
-│   ├── SCHEDULE.md
-│   └── TOOLS.md
-├── Automation/                  # n8n workflows
-│   └── n8n/
-└── docs/                       # Additional documentation
-```
-
----
-
-## 🛠 Tech Stack (Recommended)
+## Tech Stack
 
 | Layer | Technology |
 |-------|------------|
-| **Frontend** | Next.js + Tailwind + WebRTC |
-| **Backend** | FastAPI (Python) + Node.js |
-| **Agent Framework** | LangGraph |
-| **Automation** | n8n |
-| **Vector DB** | pgvector → Qdrant |
-| **Voice ASR** | Deepgram / Whisper |
-| **Voice TTS** | ElevenLabs / PlayHT / Azure |
-| **Realtime Voice** | OpenAI Realtime API |
-| **Avatar** | HeyGen / D-ID / MuseTalk |
+| **Framework** | Next.js 14 (App Router, TypeScript) |
+| **Styling** | Tailwind CSS + Framer Motion |
+| **State** | Zustand (client) + PostgreSQL (server) |
+| **Database** | Supabase PostgreSQL + pgvector + JSON file fallback |
+| **AI Providers** | OpenAI, Anthropic, Google Gemini, Groq, Perplexity, Moonshot (Kimi), OpenRouter |
+| **Voice** | GPT-4o Realtime API (WebRTC) |
+| **Bot** | Telegram via grammy |
+| **Deployment** | Vercel (serverless + crons) |
+| **Mobile** | PWA (service worker + manifest) |
 
 ---
 
-## 🎤 Core Capabilities
+## Features
 
-### Voice & Avatar
-- Real-time voice conversation with interruption handling
-- Video avatar interaction (Phase 2+)
-- Speech-to-speech with tool calling
+### AI Chat
+- Multi-provider routing with automatic fallback (OpenAI -> Anthropic -> OpenRouter -> Google)
+- 25+ models across 7 providers with per-model pricing
+- Streaming responses with markdown rendering (tables, code, headings)
+- Conversation compaction for long sessions
+- Model selector dropdown (text + voice separately)
 
-### Memory & Context
-- Short-term memory (session context)
-- Long-term memory (vector DB + metadata)
-- Knowledge graph (entities, relationships)
-- Retrieval before every major task
+### Voice
+- Real-time voice conversation via GPT-4o Realtime API
+- Interruption handling (speak over the AI)
+- Floating voice action button
+- Separate audio/text token pricing
 
-### Task Execution
-- Tool usage via MCP and workflow automation
-- Research, summarize, and draft content
-- Execute tasks and update task boards
-- Resume screening, candidate ranking, AI-led interviews
+### Memory
+- Persistent memory with auto-save (triggered by system prompt)
+- Save and recall memories via tool calls
+- PostgreSQL + pgvector for semantic search
+- JSON file fallback for local dev
+- 500-entry cap with importance scoring
+
+### Tools (16+)
+| Tool | What It Does |
+|------|-------------|
+| `web_search` | Tavily-powered internet search |
+| `check_email` | Read Gmail inbox |
+| `send_email` | Send emails via Gmail |
+| `check_calendar` | Google Calendar events |
+| `github` | Read/write repos, search code, manage issues |
+| `manage_task` | Create, update, complete tasks |
+| `save_memory` / `recall_memory` | Persistent AI memory |
+| `wikipedia` | Knowledge lookup |
+| `hacker_news` | Tech news feed |
+| `youtube_analytics` | Channel performance data |
+| `call_dhruv` | Vapi/Twilio phone calls |
+| `n8n_workflow` | Trigger n8n automations |
+| `mcp_call` | Model Context Protocol execution |
+| `goals` | Personal goal tracking |
+
+### Cost Control
+- 5-tier model routing (simple -> moderate -> complex -> tool_call -> critical)
+- Daily budget cap with hard limit enforcement
+- Session-level budget tracking
+- Smart auto-upgrade on complexity detection
+- Proactive Telegram alerts when approaching budget
+- Billing overrides for manual adjustments
+
+### Agentic Features
+- Approval gate for risky tool calls
+- Self-fix on tool failure (LLM diagnoses and retries)
+- Resilient provider with exponential backoff
+- Preference learning over time
+- Conversation compaction (summarize after 15+ turns)
+- Confidence scoring per model response
+
+### Pages
+| Route | Purpose |
+|-------|---------|
+| `/` | Chat interface (main UI) |
+| `/dashboard` | Usage analytics with charts |
+| `/tasks` | Task management |
+| `/settings` | API keys and model selection |
+| `/activity` | Real-time activity log |
+| `/social` | Social media management |
+| `/login` | Authentication |
+
+### Integrations
+- **Telegram Bot** — push notifications, digest, remote chat
+- **Google OAuth** — Gmail, Calendar, Drive access
+- **ClickUp** — task management sync
+- **n8n** — workflow automation triggers
+- **MCP** — Model Context Protocol server
+- **Vapi + Twilio** — outbound phone calls
 
 ---
 
-## 🗓 Roadmap
+## Project Structure
 
-| Phase | Focus | Status |
-|-------|-------|--------|
-| **Phase 0** | PRD, architecture, tech decisions | ✅ Complete |
-| **Phase 1** | Web UI + chat + basic tools + memory | 🔄 In Progress |
-| **Phase 2** | Voice + streaming + automation at scale | ⏳ Planned |
-| **Phase 3** | Avatar + multi-agent + mobile app | ⏳ Planned |
-| **Phase 4** | Marketplace + enterprise features | ⏳ Future |
-
----
-
-## 📱 Social Media Agent
-
-Automated content creation and posting for:
-
-| Platform | Content Type | Frequency |
-|----------|--------------|-----------|
-| LinkedIn | Post + Image | 1/day |
-| Twitter/X | Tweet + Image | 2-3/day |
-| Instagram | Video (avatar) | 3/week |
-| YouTube | Shorts + Long | 2/week |
-
-**Tech:** fal.ai (images) + Groq (LLM) + Edge TTS + n8n (posting)
-
----
-
-## 💰 Pricing (Future SaaS)
-
-| Tier | Price | Features |
-|------|-------|----------|
-| **Personal** | $29-79/mo | AI operator for daily work |
-| **Pro/Agency** | $149-499/mo | Team workflows, client-specific assistants |
-| **Enterprise** | $2,000+/mo | Custom deployment, security, compliance |
+```
+angelina-vercel-clean/
+├── src/
+│   ├── app/                    # Next.js pages + API routes
+│   │   ├── page.tsx            # Chat UI
+│   │   ├── api/chat/route.ts   # Multi-provider chat endpoint
+│   │   ├── api/tools/          # 16+ tool implementations
+│   │   ├── api/auth/           # Login + Google OAuth
+│   │   ├── api/telegram/       # Telegram webhook
+│   │   └── api/worker/         # Cron digest
+│   ├── components/             # React components (chat, layout, ui)
+│   ├── hooks/                  # useRealtimeVoice, useAngelinaVoice
+│   ├── lib/                    # Core logic (34 files)
+│   │   ├── models.ts           # 25+ model definitions
+│   │   ├── pricing.ts          # Per-model cost calculation
+│   │   ├── cost-policy.ts      # Budget enforcement
+│   │   ├── memory.ts           # Memory system
+│   │   ├── db.ts               # PostgreSQL connection
+│   │   └── telegram/bot.ts     # Telegram handler
+│   └── worker/scheduler.ts     # Background job runner
+├── sql/                        # Database migration schemas
+├── scripts/                    # Migration + utility scripts
+├── docs/                       # Deployment + env var docs
+├── public/                     # PWA assets (sw.js, manifest, icons)
+├── cost-policy.json            # Model tier configuration
+├── vercel.json                 # Vercel deployment config
+└── .env.example                # All environment variables
+```
 
 ---
 
-## 🔗 Links
+## Quick Start
 
-- **Demo:** [End-to-end AI Product](https://youtu.be/N1btQ3VaKQQ)
-- **Agentic AI:** [Self-hosted Demo](https://www.youtube.com/live/jQqFbps-Z0k)
-- **Voice Agents:** [Real-time AI Voice](https://youtu.be/3hzoRwTRuTU)
-- **Calendly:** [Book a Call](https://calendly.com/aiwithdhruv/makeaiworkforyou)
+### Local Development
 
----
+```bash
+git clone https://github.com/aiagentwithdhruv/angelina-vercel-app.git
+cd angelina-vercel-app
+npm install
+cp .env.example .env.local      # Fill in your API keys
+npm run dev                     # http://localhost:3000
+```
 
-## Hybrid Production Notes
+### Vercel Deployment
 
-- Memory now supports Postgres + `pgvector` (recommended for Vercel deployments).
-- Cost routing policy is defined in `cost-policy.json`.
-- Deployment runbook: `docs/deploy-hybrid.md`
-- Environment contracts: `docs/ops-env-vars.md`
-
-## Vercel Quick Deploy
-
-1. Import this repository in Vercel.
-2. Add environment variables from `.env.example` (use real secrets in Vercel UI).
-3. Ensure these are set:
-   - `POSTGRES_URL`
+1. Import this repo in Vercel
+2. Add environment variables from `.env.example`
+3. Required vars:
+   - `OPENAI_API_KEY` (or any one AI provider key)
+   - `AUTH_EMAIL` + `AUTH_PASSWORD`
+   - `POSTGRES_URL` (for persistent storage)
    - `MEMORY_BACKEND=postgres`
-   - `TASKS_BACKEND=postgres`
-   - `USAGE_BACKEND=postgres`
-   - `OPENAI_API_KEY`
-4. Deploy from `main`.
-5. Verify endpoints:
-   - `/api/tasks`
-   - `/api/usage`
-   - `/api/worker/digest` (include `x-worker-key` if `WORKER_API_KEY` is set)
+4. Deploy from `main`
+
+### Database Migrations
+
+```bash
+npm run migrate:memory     # Memory table + pgvector
+npm run migrate:phase2     # Tasks + usage tables
+```
 
 ---
 
-## 📄 License
+## Environment Variables
+
+See [.env.example](.env.example) for the full list. Key groups:
+
+- **AI Providers** — OpenAI, Anthropic, Gemini, Groq, Perplexity, Moonshot, OpenRouter
+- **Google OAuth** — Gmail, Calendar, Drive integration
+- **Telegram** — Bot token, chat ID, allowed users
+- **Database** — Postgres URL + backend toggles
+- **Cost Control** — Daily cap in USD
+- **External** — GitHub, Tavily, Vapi, Twilio, ClickUp, n8n, MCP
+
+---
+
+## Documentation
+
+- [Deployment Guide](docs/deploy-hybrid.md) — Vercel + VPS hybrid setup
+- [Environment Variables](docs/ops-env-vars.md) — Full env var reference
+- [System Prompt](ANGELINA-SYSTEM-PROMPT.md) — Core AI personality
+- [PRD & Tech Stack](PRD-TECH-STACK.md) — Product requirements
+
+---
+
+## License
 
 Private repository. All rights reserved.
 
 ---
 
-**Contact:** [aiwithdhruv@gmail.com](mailto:aiwithdhruv@gmail.com) | [LinkedIn](https://linkedin.com/in/aiwithdhruv)
+**Contact:** [aiwithdhruv@gmail.com](mailto:aiwithdhruv@gmail.com) | [LinkedIn](https://linkedin.com/in/aiwithdhruv) | [GitHub](https://github.com/aiagentwithdhruv)
