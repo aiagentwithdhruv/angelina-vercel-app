@@ -35,12 +35,23 @@ export interface MemoryRepository {
 }
 
 const MEMORY_FILE = path.join(process.cwd(), 'memory-data.json');
+const MEMORY_SEED = path.join(process.cwd(), 'memory-seed.json');
 
 function readFileEntries(): MemoryEntry[] {
   try {
-    if (!fs.existsSync(MEMORY_FILE)) return [];
-    const raw = fs.readFileSync(MEMORY_FILE, 'utf-8');
-    return JSON.parse(raw) as MemoryEntry[];
+    // Use memory-data.json if it exists, otherwise bootstrap from seed
+    if (fs.existsSync(MEMORY_FILE)) {
+      const raw = fs.readFileSync(MEMORY_FILE, 'utf-8');
+      return JSON.parse(raw) as MemoryEntry[];
+    }
+    if (fs.existsSync(MEMORY_SEED)) {
+      const raw = fs.readFileSync(MEMORY_SEED, 'utf-8');
+      const entries = JSON.parse(raw) as MemoryEntry[];
+      // Bootstrap: copy seed → memory-data so future writes go to the right file
+      fs.writeFileSync(MEMORY_FILE, JSON.stringify(entries, null, 2), 'utf-8');
+      return entries;
+    }
+    return [];
   } catch {
     return [];
   }

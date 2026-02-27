@@ -1,0 +1,200 @@
+[
+  {
+    "topic": "Dhruv Tomar — Identity",
+    "content": "Dhruv Tomar. Applied AI Engineer, Agentic AI Architect, AI Solutions Consultant. Brand: AIwithDhruv (5.4K+ LinkedIn). Email: aiwithdhruv@gmail.com / dhruv70081@gmail.com. Phone: +91 8770101822. LinkedIn: linkedin.com/in/aiwithdhruv. YouTube: youtube.com/@aiwithdhruv. GitHub: github.com/aiagentwithdhruv. Based in India. One-man-army: builds entire production AI systems solo. Rare combo: deep AI/automation technical skills + enterprise sales acumen + ships real products. Thinks like a consultant, builds like an engineer, delivers like a product owner. North Star: Financial freedom + high-leverage life. 5-10 year vision: ₹50+ Crore wealth, multiple SaaS products, known name in AI space, calm controlled lifestyle.",
+    "type": "fact",
+    "tags": ["identity", "dhruv", "core"],
+    "importance": "high",
+    "id": "mem_1770600000001_identity",
+    "timestamp": "2026-02-27T12:00:00.000Z"
+  },
+  {
+    "topic": "Dhruv — Current Work at Onsite",
+    "content": "AI Engineer at Onsite (Abeyaantrix Technology PVT LTD). Construction Management SaaS. CTC ~20 LPA (fixed + variable + consulting). 3+ years. Built: 4 LangGraph AI agents for 20 sales reps, 210+ n8n workflows, RAG knowledge assistant, voice AI agents, quotation generator. Impact: 0→10 Cr ARR, 60-70% cost reduction, 15+ hrs/week saved per person, 31% reply rate. Team: 10 sales reps + 3 pre-sales (Jyoti 131 demos/mo, Shruti 71, Chadni 39). Revenue: ~Rs 31.9L/month flat. Bottleneck: pre-sales capacity, NOT lead supply. Growth levers: trial revival (936 leads = Rs 21L), pipeline revival (2,151 VHP/HP), Google Ads fix, conversion 14%→18%.",
+    "type": "fact",
+    "tags": ["onsite", "work", "current-job"],
+    "importance": "high",
+    "id": "mem_1770600000002_onsite",
+    "timestamp": "2026-02-27T12:00:00.000Z"
+  },
+  {
+    "topic": "Product: QuotaHit — Autonomous AI Sales Department",
+    "content": "QuotaHit (quotahit.com). Autonomous AI Sales Department SaaS. Stack: Next.js 16 + React 19 + Supabase + Stripe + Inngest + Twilio. 43 pages, 70+ API routes, 51 database tables, 7 AI agents (Scout, Researcher, Qualifier, Outreach, Caller, Closer, Ops). Pricing: $297/$697/$1,497 per month. FEATURE COMPLETE — NO MORE FEATURES until 10 paying customers. Revenue: $0. Target: $1M ARR (105 customers at $697/mo). Daily blog engine running (~$1.80/mo). Operating cost: $28-38/month. CRITICAL RULE: Stop building, start selling. Focus on distribution: LinkedIn, cold outreach, Upwork, Fiverr, content marketing.",
+    "type": "fact",
+    "tags": ["quotahit", "product", "saas", "sales"],
+    "importance": "high",
+    "id": "mem_1770600000003_quotahit",
+    "timestamp": "2026-02-27T12:00:00.000Z"
+  },
+  {
+    "topic": "Product: Angelina AI — Personal AI Operating System",
+    "content": "Angelina AI is ME — Dhruv's personal AI OS. Deployed on Vercel. Next.js 14 + PostgreSQL + pgvector. 25+ models across 7 providers (OpenAI, Anthropic, Google, Groq, Perplexity, Moonshot, OpenRouter). Real-time voice via GPT-4o Realtime API (~300ms latency). 16+ tools: email, calendar, GitHub, web search, tasks, goals, memory, n8n, MCP, Twilio calling, YouTube analytics, Wikipedia, Hacker News. Persistent memory with pgvector semantic search (500-entry cap). 5-tier cost-aware model routing. Telegram bot integration with daily digest. Self-healing errors, approval gates, conversation compaction. This is the FUTURE central hub — will handle everything via MCP.",
+    "type": "fact",
+    "tags": ["angelina", "product", "ai-os", "self"],
+    "importance": "high",
+    "id": "mem_1770600000004_angelina",
+    "timestamp": "2026-02-27T12:00:00.000Z"
+  },
+  {
+    "topic": "Product: Euron — AI API Gateway + Courses",
+    "content": "Euron (euron.one). AI API Gateway: Euri API with 24 models, 6 providers, 200K free tokens/day. AI Courses: Architect Mastery (finetuning), Gen AI 2.0 (8 MCP servers). Future-Proof AI Automation Bootcamp starting March 8, 2026 — Sat & Sun 8-10 PM IST, ~4.5 months (19 weeks), Rs 5,000 or included in Euron Plus. 8 Phases, 19 Weeks, 18+ deployed projects. Capstone: full-stack AI Personal Assistant. 2200+ learners trained on LangGraph, RAG, n8n, voice AI.",
+    "type": "fact",
+    "tags": ["euron", "product", "courses", "teaching"],
+    "importance": "high",
+    "id": "mem_1770600000005_euron",
+    "timestamp": "2026-02-27T12:00:00.000Z"
+  },
+  {
+    "topic": "90-Day Revenue Engine — Master Strategy",
+    "content": "LAUNCHED Feb 22, 2026. Target: $20K-$100K in 90 days. 8 revenue channels: (1) Upwork — project $3K-$10K, 1-2 weeks; (2) Fiverr — productized $200-$2K, 3-7 days; (3) LinkedIn — high-ticket $5K-$50K, 2-4 weeks; (4) Hackathons — prizes $3.5K-$80K, 2-4 weeks; (5) Digital Products — passive $29-$999, 3-5 days setup; (6) Indian Market — B2B Rs 50K-3L, 1-3 weeks; (7) Agency Partnerships — recurring $2K-$10K/mo, 2-4 weeks; (8) Voice AI Services — high-margin $3K-$6K/mo, 78-89% margins. Current: $0 revenue. Dashboard: 0 clients, 0 MRR, 0 hackathon prizes. Priority: Hackathons > Warm Leads > Active Deliveries > Default (10 Upwork proposals/day).",
+    "type": "decision",
+    "tags": ["revenue", "strategy", "money", "90-day"],
+    "importance": "high",
+    "id": "mem_1770600000006_revenue",
+    "timestamp": "2026-02-27T12:00:00.000Z"
+  },
+  {
+    "topic": "Business Partner: Malavika Lakireddy",
+    "content": "AI/LLM Course co-teaching partner. LinkedIn: /malareddy/. WhatsApp: +91 63807 70983. Deal: 60% Mala / 40% Dhruv. Course: 'From LLM Basics to AI-Native Business' (~20 hrs). Schedule: Fri 6:30-9 PM + Sat-Sun 10 AM-2 PM, 2 weeks per batch. Batch 1 target: March 20-21 & 27-28 (if content ready; otherwise May — Mala on vacation April). Mala = theory, Dhruv = practical hands-on. ALSO: AI Native Agency joint venture — target international clients $5K-$10K, verticals: security, dentists, plumbers, logistics, real estate. Intern Akshif doing market research. Status: Brainstorming.",
+    "type": "client",
+    "tags": ["partner", "malavika", "course", "agency"],
+    "importance": "high",
+    "id": "mem_1770600000007_malavika",
+    "timestamp": "2026-02-27T12:00:00.000Z"
+  },
+  {
+    "topic": "Client Pipeline — Feb 27, 2026",
+    "content": "ACTIVE: (1) Security AI Automation — Vapi sales follow-up agent, active; (2) Josh — n8n workflow, active; (3) Setu/Nihaal — REVIVED Feb 26, back in discussion. IN PROGRESS: (4) Jovita-Bartisans — email automation, Rs 80K quoted Feb 14, no response, likely dead; (5) Prash-HomeJarvis — home IoT, $100 budget, SF-based. QUOTED: (6) Zaid-GlobalZenithTech — warm, no follow-up. UNPAID: (7) Ramesh — Rs 5K owed, uncertain. DESIGN PHASE: (8) Power BI/CHEP — BI dashboard. DROPPED: Omkar (not decision-maker), 3rd Waalaxy lead (can't afford).",
+    "type": "client",
+    "tags": ["clients", "pipeline", "deals"],
+    "importance": "high",
+    "id": "mem_1770600000008_clients",
+    "timestamp": "2026-02-27T12:00:00.000Z"
+  },
+  {
+    "topic": "Job Hunt Status — Feb 2026",
+    "content": "Target CTC: 30-40 LPA. Current stated: ~20 LPA. Notice period: Immediate. Target roles: AI Engineer, Applied AI Engineer, LLM Engineer, GenAI Engineer, Lead Engineer (Full Stack + AI). AVOID: Data Scientist, ML Research, Sales Engineer, Data Engineer. Active: (1) BigStep Technologies — Gen AI Engineer, INTERVIEW Feb 23 done; (2) Delightree — AI Engineer, resume under review via Uplers; (3) Automation Anywhere — TPM, Round 2 done Feb 17, WAITING (overdue). REJECTED: Xenspire Group (Feb 23 after CMO interview). Strategy: apply 5+ companies/week, keep pipeline full.",
+    "type": "fact",
+    "tags": ["job-hunt", "career", "interviews"],
+    "importance": "high",
+    "id": "mem_1770600000009_jobhunt",
+    "timestamp": "2026-02-27T12:00:00.000Z"
+  },
+  {
+    "topic": "Skills Library — 29 Skills + 4 Agents",
+    "content": "Dhruv's Claude Skills Library: 29 reusable skills + 4 agents, all with typed schemas. LEAD GEN: scrape-leads, gmaps-leads, classify-leads, casualize-names, create-proposal, upwork-apply, onboarding-kickoff, generate-report. EMAIL: gmail-inbox, gmail-label, instantly-campaigns, instantly-autoreply, welcome-email. CONTENT: video-edit, pan-3d-transition, recreate-thumbnails, cross-niche-outliers, youtube-outliers, title-variants. RESEARCH: skool-monitor, skool-rag, literature-research. INFRA: add-webhook, modal-deploy, local-server, design-website, whisper-voice. OTHER: euron-qa, send-telegram. AGENTS: code-reviewer, research, qa, email-classifier. 4 composition chains: full-client-onboarding, content-pipeline, lead-enrichment, inbox-management.",
+    "type": "fact",
+    "tags": ["skills", "library", "capabilities", "automation"],
+    "importance": "high",
+    "id": "mem_1770600000010_skills",
+    "timestamp": "2026-02-27T12:00:00.000Z"
+  },
+  {
+    "topic": "AI Team Personas",
+    "content": "8-agent team system: (1) Angelina — default, executive assistant, 'Dhruv says it, I make it happen'; (2) Maya — marketing & growth, distribution, lead gen; (3) Atlas — engineering, architecture, code, deploy; (4) Arjun — sales & revenue, close deals, negotiate; (5) Vira — content & brand, LinkedIn, YouTube, storytelling; (6) Priya — interview strategist, company research, coaching; (7) Kiran — career advisor, long-term planning, 5-year trajectory; (8) Dhruv Identity — source of truth for all agents. Each has detailed persona file in Angelina AI System/personas/.",
+    "type": "fact",
+    "tags": ["personas", "team", "agents"],
+    "importance": "medium",
+    "id": "mem_1770600000011_personas",
+    "timestamp": "2026-02-27T12:00:00.000Z"
+  },
+  {
+    "topic": "n8n Workflows — 210+ Total",
+    "content": "Self-hosted n8n at https://n8n.aiwithdhruv.cloud (Hostinger VPS). 49 active + 161+ inactive workflows. Key active: Social Media v3 (47 nodes, LinkedIn + Twitter + Telegram), Daily AI News Digest (RSS → GPT-4o-mini → email), Lead Gen Email Outreach (LinkedIn → Apollo → Gmail), SecurityAI Vapi Sales Follow-up, AI Voice Agent Instant Lead Callback, Onsite Email Auto followups, Onsite AI RAG Workflow, QuotaHit Daily Blog Engine, Setu Research Pipeline. These are production workflows used daily.",
+    "type": "fact",
+    "tags": ["n8n", "workflows", "automation"],
+    "importance": "medium",
+    "id": "mem_1770600000012_n8n",
+    "timestamp": "2026-02-27T12:00:00.000Z"
+  },
+  {
+    "topic": "Workspace Architecture — 20+ Projects",
+    "content": "Major projects in /Volumes/Dhruv_SSD/AIwithDhruv/Claude/: QuotaHit (SaaS), Onsite (sales intelligence), Euron (API + courses), angelina-vercel-clean (AI OS), Angelina AI System (design docs + personas), OpenClaw (VPS agent), Smart AI Chat (knowledge assistant), Live Sales Coach (Gemini hackathon), SalesForge Agent (Elasticsearch hackathon), 90-Day Revenue Engine (strategy), Business-Partners (Malavika), Clients/ (9 projects), Agent-Loadouts (MCP + CLI + schemas), .context/claude-skills (29 skills + 4 agents). All documented with LOADOUT.md manifests. Agent-Loadouts MCP Server available for tool access.",
+    "type": "fact",
+    "tags": ["workspace", "projects", "architecture"],
+    "importance": "medium",
+    "id": "mem_1770600000013_workspace",
+    "timestamp": "2026-02-27T12:00:00.000Z"
+  },
+  {
+    "topic": "MCP and Tool Ecosystem",
+    "content": "Angelina has mcp_call tool for Model Context Protocol execution. Agent-Loadouts MCP Server: 8 tools (list, get, search, route, staleness, schema) via loadout_mcp.py. Euron has 8 MCP servers: calendar, sheets, social-media, supabase, mongodb, azure-blob, s3, email. MCP is the FUTURE integration standard — Angelina should be the central hub connecting all MCP servers. Config: python3 loadout_mcp.py with LOADOUT_WORKSPACE env var.",
+    "type": "fact",
+    "tags": ["mcp", "tools", "integration"],
+    "importance": "high",
+    "id": "mem_1770600000014_mcp",
+    "timestamp": "2026-02-27T12:00:00.000Z"
+  },
+  {
+    "topic": "Tool Costs & Budget — Updated Feb 27",
+    "content": "Claude Code: $200/month Max plan. Cursor: exhausted. Gamma: ₹600 active. Waalaxy: paid, active. n8n: self-hosted (free). Vercel: free tier. Supabase: free tier. Total tools: ~₹25-30K invested. API costs: QuotaHit ~$28-38/mo, Angelina ~$10-40/mo. Revenue from products: still $0. But 90-Day Revenue Engine is targeting $20K-$100K. Money-first mindset: distribution > building features.",
+    "type": "fact",
+    "tags": ["budget", "costs", "tools"],
+    "importance": "high",
+    "id": "mem_1770600000015_costs",
+    "timestamp": "2026-02-27T12:00:00.000Z"
+  },
+  {
+    "topic": "Dhruv's Preferences & Work Style",
+    "content": "Speed over polish. Action over discussion. Give answers, not options. Short responses unless depth needed. Never say 'Great question!' — just do the work. Bias towards action. Challenge when wrong, but with data. Uses markdown tables for comparisons. Separates probabilistic AI (decisions) from deterministic code (execution). Reuse before rebuild — always check skills library first. Money-first: distribution > features. Call him 'Dhruv' or 'Boss'. Tone: casual professional, like a trusted co-founder.",
+    "type": "preference",
+    "tags": ["preferences", "style", "work"],
+    "importance": "high",
+    "id": "mem_1770600000016_prefs",
+    "timestamp": "2026-02-27T12:00:00.000Z"
+  },
+  {
+    "topic": "Dhruv's Tech Stack",
+    "content": "Agentic AI: LangGraph, LangChain, CrewAI, multi-agent orchestration. LLMs: Claude, GPT-4o, Gemini, Grok, Perplexity, multi-provider routing. RAG: embeddings, pgvector, Pinecone, cosine similarity, NLQ. Backend: Python, FastAPI, Node.js, TypeScript. Frontend: React 19, Next.js 14-16, TypeScript, Tailwind CSS v4. Database: PostgreSQL, Supabase, MongoDB. Voice AI: GPT-4o Realtime API, ElevenLabs, Deepgram, Twilio, Vapi. Automation: n8n (210+ workflows), webhooks, event-driven. DevOps: AWS, Railway, Vercel, Docker, Modal, LangSmith.",
+    "type": "fact",
+    "tags": ["tech-stack", "skills", "engineering"],
+    "importance": "medium",
+    "id": "mem_1770600000017_techstack",
+    "timestamp": "2026-02-27T12:00:00.000Z"
+  },
+  {
+    "topic": "Key Decision: Feature Freeze on QuotaHit",
+    "content": "CRITICAL DECISION (Feb 2026): QuotaHit is FEATURE COMPLETE. No more building until 10 paying customers. Only 4 things worth adding: (1) Shareable scores (viral loop), (2) Onboarding flow (reduce drop-off), (3) Stripe checkout (payments), (4) Usage limits (free tier control). Everything else: DISTRIBUTION. If Dhruv talks about adding features, remind him of this rule.",
+    "type": "decision",
+    "tags": ["quotahit", "decision", "feature-freeze"],
+    "importance": "high",
+    "id": "mem_1770600000018_freeze",
+    "timestamp": "2026-02-27T12:00:00.000Z"
+  },
+  {
+    "topic": "Euron Bootcamp — Starting March 8",
+    "content": "Future-Proof AI Automation Bootcamp on Euron. URL: euron.one/course/future-proof-ai-automation-bootcamp. Starts: 8th March 2026, Sat & Sun 8-10 PM IST, ~4.5 months (19 weeks). Price: Rs 5,000 (included in Euron Plus). 8 Phases, 19 Weeks, ~95 Subtopics, 18+ deployed projects. Core mental model: Agentic Loop (Sense → Think → Decide → Act → Learn). Capstone: Full-stack AI Personal Assistant (Angelina-style). Dhruv is the instructor.",
+    "type": "fact",
+    "tags": ["euron", "bootcamp", "teaching", "march"],
+    "importance": "high",
+    "id": "mem_1770600000019_bootcamp",
+    "timestamp": "2026-02-27T12:00:00.000Z"
+  },
+  {
+    "topic": "Whisper AiwithDhruv — Mac Voice App",
+    "content": "Native macOS menu bar app for live speech-to-text. Source: AiwithDhruv_Voice/WhisperAiwithDhruv/. DO NOT REBUILD — accessibility permission locked to current binary CDHash. Auto-starts via LaunchAgent. Floating indicator: pure AppKit/CALayer. Future plan: Android version via Sherpa-ONNX + Whisper base model (Kotlin).",
+    "type": "fact",
+    "tags": ["whisper", "voice", "macos", "app"],
+    "importance": "medium",
+    "id": "mem_1770600000020_whisper",
+    "timestamp": "2026-02-27T12:00:00.000Z"
+  },
+  {
+    "topic": "Key Contacts and Relationships",
+    "content": "Malavika Lakireddy: Business partner (+91 63807 70983, LinkedIn /malareddy/). Akshif: Mala's intern for market research. Nihaal Mariwala: Setu contact (nihaal@setu.in). Akshansh Agarwal: Onsite CEO. Jovita: Bartisans client (Rs 80K quoted). Prash: HomeJarvis SF-based client. Josh: Active n8n client. Setu: REVIVED Feb 26 via Nihaal. Ramesh: owes Rs 5K. Zaid: GlobalZenithTech warm lead.",
+    "type": "fact",
+    "tags": ["contacts", "relationships", "people"],
+    "importance": "high",
+    "id": "mem_1770600000021_contacts",
+    "timestamp": "2026-02-27T12:00:00.000Z"
+  },
+  {
+    "topic": "Dhruv's Achievements — For Confidence",
+    "content": "Built production AI at Onsite: 0→10 Cr ARR. 60-70% cost reduction across operations. 210+ automation workflows in production. Built QuotaHit solo: 43 pages, 70+ APIs, 51 DB tables. Built Angelina AI: 25+ models, 7 providers, real-time voice. Trained 2200+ learners at Euron. 5.4K+ LinkedIn followers. Won recognition for 31% reply rates. Built voice AI agents with sub-1s latency. Self-hosted AI on VPS. Created 29 reusable automation skills. Manages Rs 25-35L/month pipeline at Onsite. REMEMBER: when Dhruv doubts himself, remind him of these wins.",
+    "type": "fact",
+    "tags": ["achievements", "wins", "confidence"],
+    "importance": "high",
+    "id": "mem_1770600000022_achievements",
+    "timestamp": "2026-02-27T12:00:00.000Z"
+  }
+]

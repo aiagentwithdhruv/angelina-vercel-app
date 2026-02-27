@@ -6,7 +6,7 @@
  */
 
 import { NextResponse } from "next/server";
-import { ANGELINA_SYSTEM_PROMPT } from "@/lib/angelina-context";
+import { ANGELINA_VOICE_INSTRUCTIONS } from "@/lib/angelina-context";
 
 // Default + allowed voice models
 const DEFAULT_REALTIME_MODEL = "gpt-4o-mini-realtime-preview-2024-12-17";
@@ -46,8 +46,8 @@ export async function POST(request: Request) {
     // Use Angelina's full personality + any additional context
     const additionalContext = body.instructions || "";
     const instructions = additionalContext 
-      ? `${ANGELINA_SYSTEM_PROMPT}\n\n--- ADDITIONAL CONTEXT ---\n${additionalContext}`
-      : ANGELINA_SYSTEM_PROMPT;
+      ? `${ANGELINA_VOICE_INSTRUCTIONS}\n\n--- ADDITIONAL CONTEXT ---\n${additionalContext}`
+      : ANGELINA_VOICE_INSTRUCTIONS;
 
     // Tool definitions for Realtime API function calling
     // IMPORTANT: Must match the tools defined in page.tsx for text chat
