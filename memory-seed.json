@@ -28,7 +28,7 @@
   },
   {
     "topic": "Product: Angelina AI — Personal AI Operating System",
-    "content": "Angelina AI is ME — Dhruv's personal AI OS. Deployed on Vercel. Next.js 14 + PostgreSQL + pgvector. 25+ models across 7 providers (OpenAI, Anthropic, Google, Groq, Perplexity, Moonshot, OpenRouter). Real-time voice via GPT-4o Realtime API (~300ms latency). 16+ tools: email, calendar, GitHub, web search, tasks, goals, memory, n8n, MCP, Twilio calling, YouTube analytics, Wikipedia, Hacker News. Persistent memory with pgvector semantic search (500-entry cap). 5-tier cost-aware model routing. Telegram bot integration with daily digest. Self-healing errors, approval gates, conversation compaction. This is the FUTURE central hub — will handle everything via MCP.",
+    "content": "Angelina AI is ME — Dhruv's personal AI OS. Deployed on Vercel. Next.js 14 + PostgreSQL + pgvector. 25+ models across 7 providers (OpenAI, Anthropic, Google, Groq, Perplexity, Moonshot, OpenRouter). Real-time voice via GPT-4o Realtime API (~300ms latency). 17+ tools: email, calendar, GitHub, web search, tasks, goals, memory, n8n, MCP, Twilio calling, YouTube analytics, Wikipedia, Hacker News, AND Obsidian vault (read/write/search the ai-second-brain). Persistent memory with pgvector semantic search (500-entry cap). 5-tier cost-aware model routing. Telegram bot integration with daily digest. Self-healing errors, approval gates, conversation compaction. NEW (Mar 6): Obsidian vault tool added — I can now access ALL of Dhruv's knowledge base directly. This is the FUTURE central hub — will handle everything via MCP.",
     "type": "fact",
     "tags": ["angelina", "product", "ai-os", "self"],
     "importance": "high",
@@ -72,8 +72,8 @@
     "timestamp": "2026-02-27T12:00:00.000Z"
   },
   {
-    "topic": "Job Hunt Status — Feb 2026",
-    "content": "Target CTC: 30-40 LPA. Current stated: ~20 LPA. Notice period: Immediate. Target roles: AI Engineer, Applied AI Engineer, LLM Engineer, GenAI Engineer, Lead Engineer (Full Stack + AI). AVOID: Data Scientist, ML Research, Sales Engineer, Data Engineer. Active: (1) BigStep Technologies — Gen AI Engineer, INTERVIEW Feb 23 done; (2) Delightree — AI Engineer, resume under review via Uplers; (3) Automation Anywhere — TPM, Round 2 done Feb 17, WAITING (overdue). REJECTED: Xenspire Group (Feb 23 after CMO interview). Strategy: apply 5+ companies/week, keep pipeline full.",
+    "topic": "Job Hunt Status — Mar 2026",
+    "content": "Target CTC: 30-50 LPA. Current stated: ~20 LPA. Notice period: Immediate. Resume title: AI Solutions Architect & AI Lead. Target roles: AI Lead, Solutions Architect, AI Engineer, Applied AI Engineer, LLM Engineer, GenAI Engineer. AVOID: Data Scientist, ML Research, Sales Engineer, Data Engineer. Active: (1) Orbital — 35-50 LPA, interview scheduled; (2) BigStep Technologies — Gen AI Engineer, INTERVIEW Feb 23 done; (3) Delightree — AI Engineer, resume under review via Uplers; (4) Automation Anywhere — TPM, Round 2 done Feb 17, WAITING (overdue). REJECTED: Xenspire Group (Feb 23 after CMO interview). Resume: Updated Mar 6 — 20+ production systems, SaaS throughout, Delivery Portfolio table, Proof of Work links. PDF at: High Paying Jobs/Dhruv_Tomar_Master_Resume_2026.pdf. Strategy: apply 5+ companies/week, keep pipeline full.",
     "type": "fact",
     "tags": ["job-hunt", "career", "interviews"],
     "importance": "high",
@@ -81,8 +81,8 @@
     "timestamp": "2026-02-27T12:00:00.000Z"
   },
   {
-    "topic": "Skills Library — 29 Skills + 4 Agents",
-    "content": "Dhruv's Claude Skills Library: 29 reusable skills + 4 agents, all with typed schemas. LEAD GEN: scrape-leads, gmaps-leads, classify-leads, casualize-names, create-proposal, upwork-apply, onboarding-kickoff, generate-report. EMAIL: gmail-inbox, gmail-label, instantly-campaigns, instantly-autoreply, welcome-email. CONTENT: video-edit, pan-3d-transition, recreate-thumbnails, cross-niche-outliers, youtube-outliers, title-variants. RESEARCH: skool-monitor, skool-rag, literature-research. INFRA: add-webhook, modal-deploy, local-server, design-website, whisper-voice. OTHER: euron-qa, send-telegram. AGENTS: code-reviewer, research, qa, email-classifier. 4 composition chains: full-client-onboarding, content-pipeline, lead-enrichment, inbox-management.",
+    "topic": "Skills Library — 39 Skills + 4 Agents",
+    "content": "Dhruv's Claude Skills Library: 39 reusable skills + 4 agents (38 published on skills.sh). Install: npx skills add aiagentwithdhruv/skills. LEAD GEN (8): scrape-leads, gmaps-leads, classify-leads, casualize-names, create-proposal, upwork-apply, onboarding-kickoff, generate-report. EMAIL (5): gmail-inbox, gmail-label, instantly-campaigns, instantly-autoreply, welcome-email. CONTENT (9): video-edit, image-to-video (11 tools, 10 templates), pan-3d-transition, recreate-thumbnails, thumbnail-generator, nano-banana-images, cross-niche-outliers, youtube-outliers, title-variants. RESEARCH (3): skool-monitor, skool-rag, literature-research. BROWSER (1): ghost-browser (LinkedIn auto-post/engage/apply, web scraping). INFRA (6): add-webhook, modal-deploy, aws-production-deploy, local-server, design-website, whisper-voice. VISUALS (2): excalidraw-diagram, excalidraw-visuals. PRESENTATIONS (1): gamma-presentation. UTILS (4): mac-control, send-telegram, euron-qa, skill-builder. AGENTS: code-reviewer, research, qa, email-classifier. 4 composition chains: full-client-onboarding, content-pipeline, lead-enrichment, inbox-management. 107 additional global skills installed from ComposioHQ + Anthropic + inference-sh.",
     "type": "fact",
     "tags": ["skills", "library", "capabilities", "automation"],
     "importance": "high",
@@ -190,11 +190,56 @@
   },
   {
     "topic": "Dhruv's Achievements — For Confidence",
-    "content": "Built production AI at Onsite: 0→10 Cr ARR. 60-70% cost reduction across operations. 210+ automation workflows in production. Built QuotaHit solo: 43 pages, 70+ APIs, 51 DB tables. Built Angelina AI: 25+ models, 7 providers, real-time voice. Trained 2200+ learners at Euron. 5.4K+ LinkedIn followers. Won recognition for 31% reply rates. Built voice AI agents with sub-1s latency. Self-hosted AI on VPS. Created 29 reusable automation skills. Manages Rs 25-35L/month pipeline at Onsite. REMEMBER: when Dhruv doubts himself, remind him of these wins.",
+    "content": "Built production AI at Onsite: 0→10 Cr ARR. 60-70% cost reduction across operations. 210+ automation workflows in production. Built QuotaHit solo: 43 pages, 70+ APIs, 51 DB tables. Built Angelina AI: 25+ models, 7 providers, real-time voice, 17+ tools + Obsidian vault. Trained 2200+ learners at Euron. 5.4K+ LinkedIn followers. Won recognition for 31% reply rates. Built voice AI agents with sub-1s latency. Self-hosted AI on VPS. Created 39 reusable automation skills + 4 agents. Manages Rs 25-35L/month pipeline at Onsite. 300+ autonomous components across workspace. REMEMBER: when Dhruv doubts himself, remind him of these wins.",
     "type": "fact",
     "tags": ["achievements", "wins", "confidence"],
     "importance": "high",
     "id": "mem_1770600000022_achievements",
-    "timestamp": "2026-02-27T12:00:00.000Z"
+    "timestamp": "2026-03-06T12:00:00.000Z"
+  },
+  {
+    "topic": "Autonomous Capabilities Audit — Mar 5, 2026",
+    "content": "FULL AUDIT DONE: Dhruv has 300+ autonomous components. 16 MCP servers (Agent Loadouts, Onsite CRM, Onsite FB Ads, QuotaHit, Mac Automation, 8 Euron MCPs, 2 test MCPs, Obsidian). 186 n8n workflows (54 active). 11 AI agents (4 published skills agents + 4 Onsite LangGraph + Angelina + QuotaHit + OpenClaw). 4 Vercel cron jobs. 11 ghost-browser automation scripts. 40+ API integrations. 39 skills + 4 agents + 4 composition chains. CRITICAL GAPS: (1) No central orchestrator tying everything together, (2) No autonomous ad management, (3) No physical device layer (Alexa/IoT), (4) OpenClaw not deployed, (5) Onsite agents not in production. GOAL: 'Save 1 task, everything runs' — needs Master Orchestrator agent. Full report: ai-second-brain/03-Resources/Research/autonomous-capabilities-audit-2026-03-05.md",
+    "type": "fact",
+    "tags": ["audit", "autonomous", "infrastructure", "gaps"],
+    "importance": "high",
+    "id": "mem_1770600000023_audit",
+    "timestamp": "2026-03-06T12:00:00.000Z"
+  },
+  {
+    "topic": "OpenClaw — Acquired by OpenAI (Feb 2026)",
+    "content": "OpenClaw is an open-source autonomous AI agent by Peter Steinberger (formerly PSPDFKit). Originally named ClawdBot — Anthropic sent cease-and-desist, renamed to OpenClaw. OpenAI acquired it Feb 2026, Steinberger joined OpenAI. 145K+ GitHub stars. Always-on personal agent via WhatsApp/Telegram/Signal/Discord. Dhruv has configs at Openclaw/ (minimal, personal-assistant, business-bot) but NOT deployed on VPS yet. Should deploy on VPS for $10/mo — instant 24/7 agent. Can use Claude as underlying LLM.",
+    "type": "fact",
+    "tags": ["openclaw", "openai", "agent", "acquisition"],
+    "importance": "high",
+    "id": "mem_1770600000024_openclaw",
+    "timestamp": "2026-03-06T12:00:00.000Z"
+  },
+  {
+    "topic": "Claude + Alexa Partnership — LIVE",
+    "content": "Claude models now power Alexa+ (Amazon next-gen voice assistant) via Amazon Bedrock. LIVE in the US. This means Dhruv can talk to Claude through Alexa for smart home control. Also: Home Assistant MCP exists (claude-homeassistant on GitHub) — Claude can control lights, AC, any IoT device through MCP. Claude Code also got Remote Control (Feb 2026) and Voice Mode (Mar 2026, rolling out). Physical device integration is NOW possible: Alexa Custom Skill -> triggers orchestrator -> runs any automation.",
+    "type": "fact",
+    "tags": ["alexa", "claude", "iot", "smart-home", "voice"],
+    "importance": "high",
+    "id": "mem_1770600000025_alexa",
+    "timestamp": "2026-03-06T12:00:00.000Z"
+  },
+  {
+    "topic": "Obsidian Vault — ai-second-brain (Single Source of Truth)",
+    "content": "Obsidian vault at /Volumes/Dhruv_SSD/AIwithDhruv/Claude/ai-second-brain/. GitHub: aiagentwithdhruv/ai-second-brain (PRIVATE). 203+ files. Structure: PARA method — 00-Inbox, 01-Projects, 02-Areas (Clients, Daily Notes, Meetings), 03-Resources (Skills, Research), 04-Archive, Context, Memory, Templates, Dashboard. I (Angelina) now have obsidian_vault tool to read/write/search this vault directly. This is the SHARED BRAIN — all AIs (Claude Code, Angelina, OpenClaw) should read/write here. Rule: Dhruv doesn't write, AI writes, Dhruv reviews in Obsidian. Push after updates: cd ai-second-brain && git add -A && git commit && git push.",
+    "type": "fact",
+    "tags": ["obsidian", "vault", "knowledge-base", "brain"],
+    "importance": "high",
+    "id": "mem_1770600000026_vault",
+    "timestamp": "2026-03-06T12:00:00.000Z"
+  },
+  {
+    "topic": "New Agent Frameworks — 2026 Landscape",
+    "content": "Key frameworks: LangGraph (dominant for stateful workflows), CrewAI (role-based teams), AutoGen (Microsoft, conversational multi-agent), OpenAgents (NEW Jan 2026 — persistent agent networks, native MCP + A2A protocol), OpenAI Agents SDK (Feb 2026 — enterprise agent platform). OpenAgents is the notable new one — agents discover peers and collaborate autonomously. A2A (agent-to-agent) protocol emerging alongside MCP. Facebook Ads AI: AdStellar (7 agents, campaigns in 60 seconds), Madgicx (autonomous budget optimizer 24/7). 40% of enterprise apps predicted to embed task-specific AI agents by end of 2026.",
+    "type": "fact",
+    "tags": ["frameworks", "agents", "landscape", "2026"],
+    "importance": "medium",
+    "id": "mem_1770600000027_frameworks",
+    "timestamp": "2026-03-06T12:00:00.000Z"
   }
 ]
