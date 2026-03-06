@@ -240,7 +240,11 @@ export async function GET(request: NextRequest) {
         outcome = await executeTool(task.tool_name, task.tool_args);
       } else {
         // AI-reasoning task — smart model selection
-        outcome = await executeAITask(task.title, task.description || '', task.priority);
+        // On retry, escalate priority so a stronger model is used
+        const effectivePriority = task.retry_count > 0
+          ? Math.max(1, task.priority - (task.retry_count * 2))
+          : task.priority;
+        outcome = await executeAITask(task.title, task.description || '', effectivePriority);
       }
 
       // 3. Update task status
