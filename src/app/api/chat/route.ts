@@ -479,7 +479,7 @@ function needsToolUpgrade(messages: any[], tools: any[], currentProvider: string
   if (TOOL_TRIGGER_PATTERNS.some(pattern => pattern.test(text))) return true;
 
   // 2. Broad keyword check — any mention of tool-actionable concepts
-  const TOOL_KEYWORDS = /\b(task|tasks|todo|to-?do|email|mail|inbox|gmail|calendar|meeting|schedule|event|search|remember|recall|memory|call me|phone|youtube|channel|pending|in.progress|completed|done|archived|progress|priority|deadline)\b/i;
+  const TOOL_KEYWORDS = /\b(task|tasks|todo|to-?do|email|mail|inbox|gmail|calendar|meeting|schedule|event|search|remember|recall|memory|call me|phone|youtube|channel|pending|in.progress|completed|done|archived|progress|priority|deadline|goal|goals|target|achieve|okr|autonomous|queue)\b/i;
   if (TOOL_KEYWORDS.test(text)) return true;
 
   // 3. Conversation continuation — if recent messages had tool calls,
