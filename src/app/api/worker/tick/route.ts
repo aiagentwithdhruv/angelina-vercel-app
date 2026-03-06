@@ -38,12 +38,16 @@ async function executeTool(
   toolArgs: Record<string, any>,
 ): Promise<{ success: boolean; result: any; duration_ms: number }> {
   const start = Date.now();
+  // On Vercel: VERCEL_URL is always set (deployment hostname without protocol)
+  // Locally: use NEXT_PUBLIC_APP_URL (http://localhost:3000)
   const baseUrl = process.env.VERCEL_URL
     ? `https://${process.env.VERCEL_URL}`
     : (process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000');
+  const url = `${baseUrl}/api/tools/${toolName}`;
 
   try {
-    const res = await fetch(`${baseUrl}/api/tools/${toolName}`, {
+    console.log(`[Tick:executeTool] POST ${url}`);
+    const res = await fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -53,16 +57,28 @@ async function executeTool(
       body: JSON.stringify(toolArgs),
     });
 
+    if (!res.ok) {
+      const text = await res.text();
+      console.error(`[Tick:executeTool] ${res.status} ${res.statusText}: ${text.slice(0, 500)}`);
+      return {
+        success: false,
+        result: { error: `HTTP ${res.status}: ${text.slice(0, 300)}` },
+        duration_ms: Date.now() - start,
+      };
+    }
+
     const data = await res.json();
     return {
-      success: res.ok && data.success !== false,
+      success: data.success !== false,
       result: data,
       duration_ms: Date.now() - start,
     };
   } catch (error) {
+    const msg = error instanceof Error ? error.message : 'Tool execution failed';
+    console.error(`[Tick:executeTool] CATCH: ${msg}`);
     return {
       success: false,
-      result: { error: error instanceof Error ? error.message : 'Tool execution failed' },
+      result: { error: msg },
       duration_ms: Date.now() - start,
     };
   }
@@ -164,14 +180,18 @@ async function executeAITask(
   priority: number,
 ): Promise<{ success: boolean; result: any; duration_ms: number; model_used: string }> {
   const start = Date.now();
+  // On Vercel: VERCEL_URL is always set (deployment hostname without protocol)
+  // Locally: use NEXT_PUBLIC_APP_URL (http://localhost:3000)
   const baseUrl = process.env.VERCEL_URL
     ? `https://${process.env.VERCEL_URL}`
     : (process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000');
+  const url = `${baseUrl}/api/chat`;
 
   const model = selectModelForTask({ title, description, priority });
 
   try {
-    const res = await fetch(`${baseUrl}/api/chat`, {
+    console.log(`[Tick:executeAI] POST ${url} model=${model}`);
+    const res = await fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -193,17 +213,32 @@ async function executeAITask(
       }),
     });
 
+    console.log(`[Tick:executeAI] Response status=${res.status}`);
+
+    if (!res.ok) {
+      const text = await res.text();
+      console.error(`[Tick:executeAI] ${res.status} ${res.statusText}: ${text.slice(0, 500)}`);
+      return {
+        success: false,
+        result: { error: `HTTP ${res.status}: ${text.slice(0, 300)}` },
+        duration_ms: Date.now() - start,
+        model_used: model,
+      };
+    }
+
     const data = await res.json();
     return {
-      success: res.ok,
-      result: { response: data.response, toolCalls: data.toolCalls },
+      success: true,
+      result: { response: data.response || data.error, toolCalls: data.toolCalls },
       duration_ms: Date.now() - start,
       model_used: model,
     };
   } catch (error) {
+    const msg = error instanceof Error ? error.message : 'AI task failed';
+    console.error(`[Tick:executeAI] CATCH: ${msg}`);
     return {
       success: false,
-      result: { error: error instanceof Error ? error.message : 'AI task failed' },
+      result: { error: msg },
       duration_ms: Date.now() - start,
       model_used: model,
     };
@@ -255,7 +290,8 @@ export async function GET(request: NextRequest) {
       if (outcome.success) {
         await markTaskCompleted(task.id, outcome.result);
       } else {
-        await markTaskFailed(task.id, JSON.stringify(outcome.result));
+        const errorStr = outcome.result?.error || JSON.stringify(outcome.result);
+        await markTaskFailed(task.id, errorStr);
       }
 
       // 4. Log outcome
