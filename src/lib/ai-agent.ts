@@ -90,6 +90,73 @@ export const tools = {
       query: { type: 'string', required: true },
     },
   },
+
+  // Task management
+  manage_task: {
+    name: 'manage_task',
+    description: 'Create, update, bulk-update, or list tasks. Actions: "create", "update", "update_all", "list".',
+    parameters: {
+      action: { type: 'string', description: 'create, update, update_all, or list', required: true },
+      title: { type: 'string', description: 'Task title (for create/update)' },
+      description: { type: 'string', description: 'Task description' },
+      status: { type: 'string', description: 'pending, in_progress, completed, archived' },
+      priority: { type: 'string', description: 'high, medium, low' },
+      from_status: { type: 'string', description: 'For update_all: move tasks FROM this status' },
+    },
+  },
+
+  // Autonomous goals
+  goals: {
+    name: 'goals',
+    description: 'Set, update, or list autonomous goals. When a goal is created, Angelina auto-decomposes it into tasks and executes them every 15 minutes. Use for goals, targets, OKRs. Actions: "set" (new goal), "update" (progress/status), "list" (show all), "queue" (show task queue).',
+    parameters: {
+      action: { type: 'string', description: 'set, update, list, or queue', required: true },
+      title: { type: 'string', description: 'Goal title' },
+      description: { type: 'string', description: 'Goal details' },
+      target: { type: 'string', description: 'Target metric' },
+      deadline: { type: 'string', description: 'Deadline (ISO date)' },
+      progress: { type: 'number', description: 'Progress 0-100 (for update)' },
+      status: { type: 'string', description: 'active, completed, paused, failed (for update)' },
+      goal_id: { type: 'string', description: 'Goal ID (for update)' },
+      priority: { type: 'string', description: 'critical, high, medium, low' },
+    },
+  },
+
+  // Memory
+  save_memory: {
+    name: 'save_memory',
+    description: 'Save important information to memory for later recall.',
+    parameters: {
+      content: { type: 'string', description: 'What to remember', required: true },
+      topic: { type: 'string', description: 'Topic/category' },
+      type: { type: 'string', description: 'client, fact, preference, decision, task' },
+    },
+  },
+  recall_memory: {
+    name: 'recall_memory',
+    description: 'Search memory for previously saved information.',
+    parameters: {
+      query: { type: 'string', description: 'Search query', required: true },
+      type: { type: 'string', description: 'Optional filter: client, fact, preference, decision, task' },
+    },
+  },
+
+  // Call
+  call_dhruv: {
+    name: 'call_dhruv',
+    description: 'Call Dhruv on his phone. Use when he says "call me", "remind me by call", "phone me".',
+    parameters: {
+      message: { type: 'string', description: 'What to say on the call', required: true },
+      mode: { type: 'string', description: 'vapi (AI conversation) or twilio (quick reminder)', default: 'twilio' },
+    },
+  },
+
+  // YouTube
+  youtube_analytics: {
+    name: 'youtube_analytics',
+    description: 'Get YouTube channel analytics and video performance data.',
+    parameters: {},
+  },
 };
 
 // Note: The actual chat handling uses /api/chat/route.ts with ANGELINA_SYSTEM_PROMPT
