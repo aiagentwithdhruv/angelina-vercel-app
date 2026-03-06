@@ -38,15 +38,16 @@ async function executeTool(
   toolArgs: Record<string, any>,
 ): Promise<{ success: boolean; result: any; duration_ms: number }> {
   const start = Date.now();
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.VERCEL_URL
+  const baseUrl = process.env.VERCEL_URL
     ? `https://${process.env.VERCEL_URL}`
-    : 'http://localhost:3000';
+    : (process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000');
 
   try {
     const res = await fetch(`${baseUrl}/api/tools/${toolName}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        ...(process.env.AUTH_PASSWORD ? { 'x-internal-key': process.env.AUTH_PASSWORD } : {}),
         ...(process.env.WORKER_API_KEY ? { 'x-worker-key': process.env.WORKER_API_KEY } : {}),
       },
       body: JSON.stringify(toolArgs),
@@ -163,16 +164,19 @@ async function executeAITask(
   priority: number,
 ): Promise<{ success: boolean; result: any; duration_ms: number; model_used: string }> {
   const start = Date.now();
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.VERCEL_URL
+  const baseUrl = process.env.VERCEL_URL
     ? `https://${process.env.VERCEL_URL}`
-    : 'http://localhost:3000';
+    : (process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000');
 
   const model = selectModelForTask({ title, description, priority });
 
   try {
     const res = await fetch(`${baseUrl}/api/chat`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        ...(process.env.AUTH_PASSWORD ? { 'x-internal-key': process.env.AUTH_PASSWORD } : {}),
+      },
       body: JSON.stringify({
         messages: [
           {
