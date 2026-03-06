@@ -12,6 +12,8 @@ const PUBLIC_PATHS = [
   '/api/auth',           // All auth routes (login, logout, google oauth)
   '/api/telegram',
   '/api/worker/digest',
+  '/api/worker/tick',
+  '/api/worker/reflect',
 ];
 
 // Internal API key for server-to-server calls (Telegram bot → /api/chat)

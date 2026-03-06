@@ -70,39 +70,90 @@ async function executeTool(
 /**
  * Smart Model Selection — pick cheapest adequate model per task.
  *
- * Priority order (cheapest first):
- * 1. Groq (free tier) — simple drafts, summaries, basic reasoning
- * 2. Haiku 4.5 / Kimi K2.5 — medium content, analysis
- * 3. GPT-4.1-mini — tool calling, decomposition, structured output
- * 4. GPT-4.1 / Claude — complex strategy, critical decisions
+ * 5-tier cost ladder (Angelina always picks cheapest that works):
+ *
+ * TIER 1 — FREE ($0):
+ *   Groq llama-4-scout (free tier, fast inference)
+ *
+ * TIER 2 — ULTRA CHEAP (~$0.00005/task):
+ *   Gemini 3 Flash Preview (via OpenRouter), GPT-4.1-nano, Gemma2
+ *
+ * TIER 3 — CHEAP (~$0.0002/task):
+ *   Gemini 2.5 Flash, Haiku 4.5, Kimi K2.5, GPT-4.1-mini
+ *
+ * TIER 4 — STANDARD (~$0.001/task):
+ *   GPT-4.1-mini (tool calling), Gemini 2.5 Pro
+ *
+ * TIER 5 — PREMIUM (~$0.01/task):
+ *   GPT-4.1, Claude Sonnet 4.5 (only for critical tasks)
  */
+
+// Helper: pick first available model from a list
+function firstAvailable(models: Array<{ model: string; needsKey: string }>): string | null {
+  for (const m of models) {
+    if (process.env[m.needsKey]) return m.model;
+  }
+  return null;
+}
+
 function selectModelForTask(task: { title: string; description?: string; priority: number }): string {
   const text = `${task.title} ${task.description || ''}`.toLowerCase();
 
-  // Priority 1-2 (critical/high) → use reliable model
-  if (task.priority <= 2) return 'gpt-4.1-mini';
-
-  // Tasks needing tool calls → GPT-4.1-mini (best at function calling)
-  const NEEDS_TOOLS = /\b(search|email|calendar|send|post|publish|create task|update|check)\b/i;
-  if (NEEDS_TOOLS.test(text)) return 'gpt-4.1-mini';
-
-  // Complex reasoning → GPT-4.1-mini
-  const COMPLEX = /\b(strategy|analyze|plan|architect|decide|evaluate|compare|review code)\b/i;
-  if (COMPLEX.test(text)) return 'gpt-4.1-mini';
-
-  // Simple tasks → Groq (free) or Haiku (cheap)
-  const SIMPLE = /\b(draft|summarize|rewrite|translate|format|list|describe|explain|write)\b/i;
-  if (SIMPLE.test(text)) {
-    // Try Groq first (free), fall back to Haiku
-    if (process.env.GROQ_API_KEY) return 'groq:llama-4-scout-17b-16e-instruct';
-    if (process.env.ANTHROPIC_API_KEY) return 'claude-haiku-4-5-20251001';
-    if (process.env.MOONSHOT_API_KEY) return 'kimi-k2.5';
-    return 'gpt-4.1-mini';
+  // ── TIER 5: Critical/high priority (1-2) → premium reliable model ──
+  if (task.priority <= 2) {
+    return firstAvailable([
+      { model: 'gpt-4.1', needsKey: 'OPENAI_API_KEY' },
+      { model: 'claude-sonnet-4-5-20250929', needsKey: 'ANTHROPIC_API_KEY' },
+    ]) || 'gpt-4.1-mini';
   }
 
-  // Default: cheapest available
-  if (process.env.GROQ_API_KEY) return 'groq:llama-4-scout-17b-16e-instruct';
-  return 'gpt-4.1-mini';
+  // ── TIER 4: Tasks needing tool calls → must use reliable function callers ──
+  const NEEDS_TOOLS = /\b(search|email|calendar|send|post|publish|create task|update task|check inbox|trigger|webhook)\b/i;
+  if (NEEDS_TOOLS.test(text)) {
+    return 'gpt-4.1-mini'; // Best at function calling, reliable
+  }
+
+  // ── TIER 4: Complex reasoning ──
+  const COMPLEX = /\b(strategy|analyze|plan|architect|decide|evaluate|compare|review|debug|refactor|optimize)\b/i;
+  if (COMPLEX.test(text)) {
+    return firstAvailable([
+      { model: 'gemini-2.5-pro', needsKey: 'GEMINI_API_KEY' },        // Cheap + powerful
+      { model: 'kimi-k2.5', needsKey: 'MOONSHOT_API_KEY' },           // Strong reasoning
+      { model: 'gpt-4.1-mini', needsKey: 'OPENAI_API_KEY' },
+    ]) || 'gpt-4.1-mini';
+  }
+
+  // ── TIER 3: Medium tasks (content writing, analysis) ──
+  const MEDIUM = /\b(write|create|compose|generate|research|report|content|article|blog)\b/i;
+  if (MEDIUM.test(text)) {
+    return firstAvailable([
+      { model: 'gemini-2.5-flash', needsKey: 'GEMINI_API_KEY' },      // Very cheap + good
+      { model: 'claude-haiku-4-5-20251001', needsKey: 'ANTHROPIC_API_KEY' }, // Fast Claude
+      { model: 'kimi-k2.5', needsKey: 'MOONSHOT_API_KEY' },
+      { model: 'groq:llama-4-scout-17b-16e-instruct', needsKey: 'GROQ_API_KEY' },
+    ]) || 'gpt-4.1-mini';
+  }
+
+  // ── TIER 2: Simple tasks (drafts, summaries, formatting) ──
+  const SIMPLE = /\b(draft|summarize|rewrite|translate|format|list|describe|explain|notify|remind|log)\b/i;
+  if (SIMPLE.test(text)) {
+    return firstAvailable([
+      { model: 'groq:llama-4-scout-17b-16e-instruct', needsKey: 'GROQ_API_KEY' },  // FREE
+      { model: 'gpt-4.1-nano', needsKey: 'OPENAI_API_KEY' },          // Ultra cheap
+      { model: 'groq:gemma2-9b-it', needsKey: 'GROQ_API_KEY' },       // FREE
+      { model: 'gemini-2.5-flash', needsKey: 'GEMINI_API_KEY' },
+      { model: 'claude-haiku-4-5-20251001', needsKey: 'ANTHROPIC_API_KEY' },
+    ]) || 'gpt-4.1-mini';
+  }
+
+  // ── TIER 1: Default — cheapest available for everything else ──
+  return firstAvailable([
+    { model: 'groq:llama-4-scout-17b-16e-instruct', needsKey: 'GROQ_API_KEY' },
+    { model: 'gpt-4.1-nano', needsKey: 'OPENAI_API_KEY' },
+    { model: 'gemini-2.5-flash', needsKey: 'GEMINI_API_KEY' },
+    { model: 'claude-haiku-4-5-20251001', needsKey: 'ANTHROPIC_API_KEY' },
+    { model: 'kimi-k2.5', needsKey: 'MOONSHOT_API_KEY' },
+  ]) || 'gpt-4.1-mini';
 }
 
 // Execute an AI-reasoning task (no specific tool — Angelina thinks and acts)
