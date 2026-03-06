@@ -54,6 +54,7 @@ function CommandCenterInner() {
     recall_memory: 'Memory Recalled',
     call_dhruv: 'Phone Call',
     manage_task: 'Task Updated',
+    obsidian_vault: 'Vault Access',
   };
 
   // Add activity to the feed (newest first, max 50)
@@ -252,6 +253,17 @@ function CommandCenterInner() {
       description: 'Interact with an MCP (Model Context Protocol) server. Use action="list" to discover available tools, or action="call" with a tool name to execute. Use when Dhruv asks to use external tools, plugins, or MCP capabilities.',
       parameters: { action: { type: 'string', description: '"list" to see available tools, "call" to execute a tool', required: true }, tool: { type: 'string', description: 'Tool name to call (required for action=call)' }, arguments: { type: 'object', description: 'Arguments to pass to the tool' } },
     },
+    {
+      name: 'obsidian_vault',
+      description: 'Access Dhruv\'s Obsidian vault (ai-second-brain) — the single source of truth for ALL projects, clients, skills, research, daily notes, and context. Actions: "read" (read a file), "write" (create/update a file), "list" (list files in a folder), "search" (search content across vault), "summary" (vault overview). ALWAYS use this when Dhruv asks about a project status, client info, skill details, or anything that should be in his knowledge base. Also use this to write daily notes, meeting notes, and research findings.',
+      parameters: {
+        action: { type: 'string', description: 'read, write, list, search, or summary', required: true },
+        file_path: { type: 'string', description: 'File path in vault (e.g. "01-Projects/QuotaHit.md", "02-Areas/Clients/Onsite.md")' },
+        content: { type: 'string', description: 'Markdown content to write (for write action)' },
+        query: { type: 'string', description: 'Search query (for search action)' },
+        folder: { type: 'string', description: 'Folder to list or search in (e.g. "01-Projects", "02-Areas/Clients")' },
+      },
+    },
   ];
 
   // Get a human-readable detail string for each tool result
@@ -300,6 +312,13 @@ function CommandCenterInner() {
       case 'mcp_call':
         if (args?.action === 'list') return `Found ${result.tools?.length || 0} tools`;
         return result.success ? `Called: ${args?.tool || 'tool'}` : 'MCP call failed';
+      case 'obsidian_vault':
+        if (args?.action === 'read') return `Read: ${args?.file_path || 'file'}`;
+        if (args?.action === 'write') return `${result.action === 'created' ? 'Created' : 'Updated'}: ${args?.file_path || 'file'}`;
+        if (args?.action === 'list') return `${result.total || result.folders?.length || 0} items in ${args?.folder || 'vault'}`;
+        if (args?.action === 'search') return `${result.results?.length || 0} results for "${args?.query}"`;
+        if (args?.action === 'summary') return `${result.totalFiles || 0} files across vault`;
+        return result.success ? 'Vault accessed' : 'Vault error';
       default:
         return result.success ? 'Completed' : 'Done';
     }
