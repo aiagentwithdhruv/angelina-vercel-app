@@ -67,15 +67,56 @@ async function executeTool(
   }
 }
 
+/**
+ * Smart Model Selection — pick cheapest adequate model per task.
+ *
+ * Priority order (cheapest first):
+ * 1. Groq (free tier) — simple drafts, summaries, basic reasoning
+ * 2. Haiku 4.5 / Kimi K2.5 — medium content, analysis
+ * 3. GPT-4.1-mini — tool calling, decomposition, structured output
+ * 4. GPT-4.1 / Claude — complex strategy, critical decisions
+ */
+function selectModelForTask(task: { title: string; description?: string; priority: number }): string {
+  const text = `${task.title} ${task.description || ''}`.toLowerCase();
+
+  // Priority 1-2 (critical/high) → use reliable model
+  if (task.priority <= 2) return 'gpt-4.1-mini';
+
+  // Tasks needing tool calls → GPT-4.1-mini (best at function calling)
+  const NEEDS_TOOLS = /\b(search|email|calendar|send|post|publish|create task|update|check)\b/i;
+  if (NEEDS_TOOLS.test(text)) return 'gpt-4.1-mini';
+
+  // Complex reasoning → GPT-4.1-mini
+  const COMPLEX = /\b(strategy|analyze|plan|architect|decide|evaluate|compare|review code)\b/i;
+  if (COMPLEX.test(text)) return 'gpt-4.1-mini';
+
+  // Simple tasks → Groq (free) or Haiku (cheap)
+  const SIMPLE = /\b(draft|summarize|rewrite|translate|format|list|describe|explain|write)\b/i;
+  if (SIMPLE.test(text)) {
+    // Try Groq first (free), fall back to Haiku
+    if (process.env.GROQ_API_KEY) return 'groq:llama-4-scout-17b-16e-instruct';
+    if (process.env.ANTHROPIC_API_KEY) return 'claude-haiku-4-5-20251001';
+    if (process.env.MOONSHOT_API_KEY) return 'kimi-k2.5';
+    return 'gpt-4.1-mini';
+  }
+
+  // Default: cheapest available
+  if (process.env.GROQ_API_KEY) return 'groq:llama-4-scout-17b-16e-instruct';
+  return 'gpt-4.1-mini';
+}
+
 // Execute an AI-reasoning task (no specific tool — Angelina thinks and acts)
 async function executeAITask(
   title: string,
   description: string,
-): Promise<{ success: boolean; result: any; duration_ms: number }> {
+  priority: number,
+): Promise<{ success: boolean; result: any; duration_ms: number; model_used: string }> {
   const start = Date.now();
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.VERCEL_URL
     ? `https://${process.env.VERCEL_URL}`
     : 'http://localhost:3000';
+
+  const model = selectModelForTask({ title, description, priority });
 
   try {
     const res = await fetch(`${baseUrl}/api/chat`, {
@@ -92,7 +133,7 @@ async function executeAITask(
             content: `AUTONOMOUS TASK: ${title}\n\nDetails: ${description || 'No additional details.'}\n\nComplete this task now. Be concise in your response.`,
           },
         ],
-        model: 'gpt-4.1-mini',
+        model,
         source: 'autonomous-tick',
       }),
     });
@@ -102,12 +143,14 @@ async function executeAITask(
       success: res.ok,
       result: { response: data.response, toolCalls: data.toolCalls },
       duration_ms: Date.now() - start,
+      model_used: model,
     };
   } catch (error) {
     return {
       success: false,
       result: { error: error instanceof Error ? error.message : 'AI task failed' },
       duration_ms: Date.now() - start,
+      model_used: model,
     };
   }
 }
@@ -118,7 +161,7 @@ export async function GET(request: NextRequest) {
   }
 
   const maxTasks = parseInt(new URL(request.url).searchParams.get('max') || '3');
-  const results: Array<{ task_id: string; title: string; success: boolean; duration_ms: number }> = [];
+  const results: Array<{ task_id: string; title: string; success: boolean; duration_ms: number; model?: string }> = [];
 
   try {
     // 1. Get pending tasks ready to execute
@@ -139,14 +182,14 @@ export async function GET(request: NextRequest) {
     for (const task of tasks) {
       await markTaskRunning(task.id);
 
-      let outcome: { success: boolean; result: any; duration_ms: number };
+      let outcome: { success: boolean; result: any; duration_ms: number; model_used?: string };
 
       if (task.tool_name) {
-        // Direct tool execution
+        // Direct tool execution — no AI cost
         outcome = await executeTool(task.tool_name, task.tool_args);
       } else {
-        // AI-reasoning task
-        outcome = await executeAITask(task.title, task.description || '');
+        // AI-reasoning task — smart model selection
+        outcome = await executeAITask(task.title, task.description || '', task.priority);
       }
 
       // 3. Update task status
@@ -178,9 +221,10 @@ export async function GET(request: NextRequest) {
         title: task.title,
         success: outcome.success,
         duration_ms: outcome.duration_ms,
+        model: outcome.model_used,
       });
 
-      console.log(`[Tick] ${outcome.success ? 'OK' : 'FAIL'} ${task.title} (${outcome.duration_ms}ms)`);
+      console.log(`[Tick] ${outcome.success ? 'OK' : 'FAIL'} ${task.title} [${outcome.model_used || task.tool_name || 'tool'}] (${outcome.duration_ms}ms)`);
     }
 
     // 6. Push summary to Telegram if any tasks executed
@@ -192,7 +236,7 @@ export async function GET(request: NextRequest) {
       const msg = [
         `*Angelina Autonomous Tick*`,
         `Executed: ${results.length} tasks (${succeeded} OK, ${failed} failed)`,
-        ...results.map((r) => `  ${r.success ? 'OK' : 'FAIL'} ${r.title} (${r.duration_ms}ms)`),
+        ...results.map((r) => `  ${r.success ? 'OK' : 'FAIL'} ${r.title} [${r.model || 'tool'}] (${r.duration_ms}ms)`),
         `Queue: ${stats.pending} pending, ${stats.completed_today} done today`,
       ].join('\n');
 
