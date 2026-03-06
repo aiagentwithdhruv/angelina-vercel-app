@@ -104,6 +104,14 @@ async function getApiKey(envKey: string, cookieId: string): Promise<string | und
   }
 }
 
+function safeParseArgs(name: string, raw: any): Record<string, any> {
+  if (typeof raw === 'object' && raw !== null) return raw;
+  try { return JSON.parse(raw); } catch {
+    console.warn(`[Chat] Failed to parse tool args for ${name}:`, raw);
+    return {};
+  }
+}
+
 function getProvider(model: string): string {
   if (model.startsWith('or:')) return 'openrouter';
   if (model.startsWith('groq:')) return 'groq';
@@ -180,7 +188,7 @@ async function callOpenAI(apiKey: string, model: string, messages: any[], tools?
     return {
       toolCalls: choice.message.tool_calls.map((tc: any) => ({
         name: tc.function.name,
-        arguments: JSON.parse(tc.function.arguments),
+        arguments: safeParseArgs(tc.function.name, tc.function.arguments),
       })),
       model: modelUsed,
       rawData: data,
@@ -316,7 +324,7 @@ async function callMoonshot(apiKey: string, model: string, messages: any[], tool
     return {
       toolCalls: choice.message.tool_calls.map((tc: any) => ({
         name: tc.function.name,
-        arguments: JSON.parse(tc.function.arguments),
+        arguments: safeParseArgs(tc.function.name, tc.function.arguments),
       })),
       model: modelUsed,
       rawData: data,
@@ -354,7 +362,7 @@ async function callOpenRouter(apiKey: string, routerModelId: string, messages: a
     return {
       toolCalls: choice.message.tool_calls.map((tc: any) => ({
         name: tc.function.name,
-        arguments: JSON.parse(tc.function.arguments),
+        arguments: safeParseArgs(tc.function.name, tc.function.arguments),
       })),
       model: modelUsed,
       rawData: data,
@@ -389,7 +397,7 @@ async function callGroq(apiKey: string, model: string, messages: any[], tools?: 
     return {
       toolCalls: choice.message.tool_calls.map((tc: any) => ({
         name: tc.function.name,
-        arguments: JSON.parse(tc.function.arguments),
+        arguments: safeParseArgs(tc.function.name, tc.function.arguments),
       })),
       model: data.model || modelId,
       rawData: data,

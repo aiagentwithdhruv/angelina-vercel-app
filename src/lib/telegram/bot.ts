@@ -136,10 +136,12 @@ async function callAngelinaChat(
 
 async function executeTool(toolName: string, args: any): Promise<any> {
   try {
+    // Ensure args is an object (LLM sometimes returns a string)
+    const safeArgs = typeof args === 'string' ? JSON.parse(args) : (args || {});
     const res = await fetch(`${BASE_URL}/api/tools/${toolName}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'x-internal-key': INTERNAL_KEY },
-      body: JSON.stringify(args),
+      body: JSON.stringify(safeArgs),
     });
     return await res.json();
   } catch (err: any) {
