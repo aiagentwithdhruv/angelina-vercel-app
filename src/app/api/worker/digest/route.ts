@@ -57,12 +57,21 @@ export async function GET(request: NextRequest) {
     });
   }
 
+  // Autonomous activity
+  if (digest.autonomousStats) {
+    const a = digest.autonomousStats;
+    if (a.completed_today > 0 || a.pending > 0 || a.failed_today > 0) {
+      parts.push('', `*Autonomous Engine:*`);
+      parts.push(`  Done today: ${a.completed_today} | Pending: ${a.pending} | Running: ${a.running} | Failed: ${a.failed_today}`);
+    }
+  }
+
   // Cost + models
   if (digest.costTodayUsd > 0) {
-    parts.push('', `💰 Spend today: $${digest.costTodayUsd.toFixed(4)}`);
+    parts.push('', `Spend today: $${digest.costTodayUsd.toFixed(4)}`);
   }
   if (digest.modelBreakdown && digest.modelBreakdown.length > 0) {
-    parts.push(`📊 Models: ${digest.modelBreakdown.map((m) => `${m.model}(${m.requests})`).join(', ')}`);
+    parts.push(`Models: ${digest.modelBreakdown.map((m) => `${m.model}(${m.requests})`).join(', ')}`);
   }
 
   const message = parts.join('\n');

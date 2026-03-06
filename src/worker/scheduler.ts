@@ -2,6 +2,7 @@ import { getTaskStats, getAllTasks } from '@/lib/tasks-store';
 import { getUsageStats } from '@/lib/usage-store';
 import { getActiveGoals } from '@/lib/goals-store';
 import { checkProactiveTriggers, ProactiveAlert } from '@/lib/proactive-push';
+import { getTaskQueueStats, getActiveGoals as getAutoGoals } from '@/lib/autonomous-queue';
 
 export interface DigestPayload {
   generatedAt: string;
@@ -13,6 +14,7 @@ export interface DigestPayload {
   successRate: number;
   modelBreakdown: Array<{ model: string; requests: number }>;
   alerts: ProactiveAlert[];
+  autonomousStats?: { pending: number; running: number; completed_today: number; failed_today: number };
 }
 
 export async function buildDailyDigest(): Promise<DigestPayload> {
@@ -52,6 +54,19 @@ export async function buildDailyDigest(): Promise<DigestPayload> {
     alerts = await checkProactiveTriggers();
   } catch { /* alerts unavailable */ }
 
+  // Autonomous queue stats
+  let autonomousStats: DigestPayload['autonomousStats'];
+  try {
+    autonomousStats = await getTaskQueueStats();
+    const autoGoals = await getAutoGoals();
+    if (autoGoals.length > 0) {
+      activeGoals = [
+        ...activeGoals,
+        ...autoGoals.map((g) => ({ title: `[Auto] ${g.title}`, progress: g.progress })),
+      ];
+    }
+  } catch { /* autonomous tables not yet created */ }
+
   const summaryParts = [
     `You have ${stats.pending} pending and ${stats.in_progress} in-progress tasks.`,
   ];
@@ -64,6 +79,11 @@ export async function buildDailyDigest(): Promise<DigestPayload> {
   summaryParts.push(
     `Today's AI spend is $${usage.costToday.toFixed(4)} with ${usage.successRate}% success rate.`,
   );
+  if (autonomousStats && (autonomousStats.completed_today > 0 || autonomousStats.pending > 0)) {
+    summaryParts.push(
+      `Autonomous: ${autonomousStats.completed_today} tasks done today, ${autonomousStats.pending} pending, ${autonomousStats.failed_today} failed.`,
+    );
+  }
 
   return {
     generatedAt: new Date().toISOString(),
@@ -75,6 +95,7 @@ export async function buildDailyDigest(): Promise<DigestPayload> {
     successRate: usage.successRate,
     modelBreakdown,
     alerts,
+    autonomousStats,
   };
 }
 
