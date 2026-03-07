@@ -38,11 +38,10 @@ async function executeTool(
   toolArgs: Record<string, any>,
 ): Promise<{ success: boolean; result: any; duration_ms: number }> {
   const start = Date.now();
-  // On Vercel: VERCEL_URL is always set (deployment hostname without protocol)
-  // Locally: use NEXT_PUBLIC_APP_URL (http://localhost:3000)
-  const baseUrl = process.env.VERCEL_URL
-    ? `https://${process.env.VERCEL_URL}`
-    : (process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000');
+  // Prefer NEXT_PUBLIC_APP_URL (stable production URL like https://angelina-vercel-clean.vercel.app)
+  // VERCEL_URL is deployment-specific and changes every deploy — avoid for self-calls
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL
+    || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
   const url = `${baseUrl}/api/tools/${toolName}`;
 
   try {
@@ -180,11 +179,10 @@ async function executeAITask(
   priority: number,
 ): Promise<{ success: boolean; result: any; duration_ms: number; model_used: string }> {
   const start = Date.now();
-  // On Vercel: VERCEL_URL is always set (deployment hostname without protocol)
-  // Locally: use NEXT_PUBLIC_APP_URL (http://localhost:3000)
-  const baseUrl = process.env.VERCEL_URL
-    ? `https://${process.env.VERCEL_URL}`
-    : (process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000');
+  // Prefer NEXT_PUBLIC_APP_URL (stable production URL like https://angelina-vercel-clean.vercel.app)
+  // VERCEL_URL is deployment-specific and changes every deploy — avoid for self-calls
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL
+    || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
   const url = `${baseUrl}/api/chat`;
 
   const model = selectModelForTask({ title, description, priority });
@@ -255,9 +253,8 @@ export async function GET(request: NextRequest) {
 
   // ── Diagnose: show env/config without executing ──
   if (action === 'diagnose') {
-    const baseUrl = process.env.VERCEL_URL
-      ? `https://${process.env.VERCEL_URL}`
-      : (process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000');
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL
+      || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
     return NextResponse.json({
       baseUrl,
       vercelUrl: process.env.VERCEL_URL || '(not set)',
