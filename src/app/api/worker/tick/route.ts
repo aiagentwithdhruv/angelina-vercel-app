@@ -250,7 +250,41 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const maxTasks = parseInt(new URL(request.url).searchParams.get('max') || '3');
+  const url = new URL(request.url);
+  const action = url.searchParams.get('action');
+
+  // ── Diagnose: show env/config without executing ──
+  if (action === 'diagnose') {
+    const baseUrl = process.env.VERCEL_URL
+      ? `https://${process.env.VERCEL_URL}`
+      : (process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000');
+    return NextResponse.json({
+      baseUrl,
+      vercelUrl: process.env.VERCEL_URL || '(not set)',
+      nextPublicAppUrl: process.env.NEXT_PUBLIC_APP_URL || '(not set)',
+      hasAuthPassword: Boolean(process.env.AUTH_PASSWORD),
+      hasAuthEmail: Boolean(process.env.AUTH_EMAIL),
+      hasWorkerKey: Boolean(process.env.WORKER_API_KEY),
+      hasOpenAI: Boolean(process.env.OPENAI_API_KEY),
+      hasMoonshot: Boolean(process.env.MOONSHOT_API_KEY),
+      hasGemini: Boolean(process.env.GEMINI_API_KEY),
+      hasGroq: Boolean(process.env.GROQ_API_KEY),
+      hasAnthropic: Boolean(process.env.ANTHROPIC_API_KEY),
+      hasOpenRouter: Boolean(process.env.OPENROUTER_API_KEY),
+      chatEndpoint: `${baseUrl}/api/chat`,
+    });
+  }
+
+  // ── Reset: reset failed tasks back to pending ──
+  if (action === 'reset') {
+    const pool = (await import('@/lib/db')).getPgPool();
+    const res = await pool.query(
+      `UPDATE task_queue SET status = 'pending', retry_count = 0, error = NULL, started_at = NULL, completed_at = NULL WHERE status = 'failed' RETURNING id, title`,
+    );
+    return NextResponse.json({ reset: res.rows.length, tasks: res.rows });
+  }
+
+  const maxTasks = parseInt(url.searchParams.get('max') || '3');
   const results: Array<{ task_id: string; title: string; success: boolean; duration_ms: number; model?: string }> = [];
 
   try {
