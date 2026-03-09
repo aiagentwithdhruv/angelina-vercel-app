@@ -9,7 +9,6 @@ import { NextResponse } from "next/server";
 import { ANGELINA_VOICE_INSTRUCTIONS } from "@/lib/angelina-context";
 
 const GEMINI_LIVE_MODELS = [
-  "gemini-2.5-flash-preview-native-audio-dialog",
   "gemini-2.0-flash-live-001",
 ];
 
