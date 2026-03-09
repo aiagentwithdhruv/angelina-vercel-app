@@ -1,8 +1,8 @@
 {
   "enabled": true,
-  "dailyBudgetUsd": 1,
-  "sessionBudgetUsd": 0.25,
-  "hardDailyCapUsd": 2,
+  "dailyBudgetUsd": 10,
+  "sessionBudgetUsd": 3,
+  "hardDailyCapUsd": 15,
   "estimatedInputTokens": 900,
   "estimatedOutputTokens": 500,
   "tiers": {
@@ -22,9 +22,9 @@
     ],
     "complex": [
       "kimi-k2.5",
-      "claude-sonnet-4-5-20250929",
+      "gpt-4.1-mini",
+      "sonar",
       "gpt-4.1",
-      "sonar-pro",
       "or:google/gemini-3-pro-preview"
     ],
     "tool_call": [

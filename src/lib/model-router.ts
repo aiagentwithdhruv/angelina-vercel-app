@@ -1,13 +1,13 @@
 /**
- * Model Router — Smart task-aware routing to optimal model
+ * Model Router — Quality-first task-aware routing ($5-10/day budget)
  *
  * Routes based on BOTH complexity AND task type:
- *   Coding      → Kimi K2.5 (Moonshot, SOTA coding)
- *   Research    → Perplexity Sonar (built-in web search)
- *   Content     → Claude Sonnet (excellent writing)
- *   Quick chat  → Groq Llama (fastest, free)
- *   Analysis    → GPT-4.1 (reasoning)
- *   Default     → Gemini Flash (fast + cheap)
+ *   Coding      → Kimi K2.5 (SOTA coding, $0.60)
+ *   Research    → Sonar (built-in web search, $1)
+ *   Content     → Kimi K2.5 (excellent writing, $0.60)
+ *   Chat        → GPT-4.1-mini (smart + fast, $0.40)
+ *   Analysis    → Kimi K2.5 (strong reasoning, $0.60)
+ *   Simple      → Groq Llama (free, instant)
  *
  * Only applies when user hasn't manually selected a model.
  * Provider availability checked at runtime via env vars.
@@ -94,37 +94,38 @@ interface ModelChoice {
   envKey: string;  // Required env var for this provider
 }
 
-// COST-FIRST routing: Groq (free) → Gemini Flash ($0.15) → GPT-nano ($0.10) → task-specific
-// Expensive models (Claude $3/$15, Sonar $1/$1, GPT-4.1 $2/$8) = MANUAL ONLY
+// QUALITY-FIRST routing ($5-10/day budget)
+// Best model per task type, with cheaper fallbacks if provider missing.
+// Claude Opus ($15/$75) and Sonar Pro ($3/$15) = MANUAL ONLY (too expensive for auto)
 const TASK_ROUTING: Record<TaskType, ModelChoice[]> = {
   coding: [
-    { model: 'kimi-k2.5', envKey: 'MOONSHOT_API_KEY' },           // $0.60/$2.40 — worth it for code quality
-    { model: 'or:deepseek/deepseek-v3.2', envKey: 'OPENROUTER_API_KEY' }, // $0.27/$1.10
-    { model: 'groq:llama-3.3-70b-versatile', envKey: 'GROQ_API_KEY' },   // Free
+    { model: 'kimi-k2.5', envKey: 'MOONSHOT_API_KEY' },           // $0.60/$2.40 — SOTA coding
     { model: 'gpt-4.1-mini', envKey: 'OPENAI_API_KEY' },          // $0.40/$1.60
+    { model: 'or:deepseek/deepseek-v3.2', envKey: 'OPENROUTER_API_KEY' }, // $0.27/$1.10
+    { model: 'groq:llama-3.3-70b-versatile', envKey: 'GROQ_API_KEY' },   // Free fallback
   ],
   research: [
+    { model: 'sonar', envKey: 'PERPLEXITY_API_KEY' },             // $1/$1 — built-in web search
+    { model: 'gpt-4.1-mini', envKey: 'OPENAI_API_KEY' },          // $0.40/$1.60
     { model: 'or:google/gemini-3-flash-preview', envKey: 'OPENROUTER_API_KEY' }, // $0.15/$0.60
     { model: 'gemini-2.5-flash', envKey: 'GEMINI_API_KEY' },      // $0.15/$0.60
-    { model: 'groq:llama-3.3-70b-versatile', envKey: 'GROQ_API_KEY' },   // Free
-    { model: 'gpt-4.1-mini', envKey: 'OPENAI_API_KEY' },          // $0.40/$1.60
   ],
   content: [
+    { model: 'kimi-k2.5', envKey: 'MOONSHOT_API_KEY' },           // $0.60/$2.40 — great writer
+    { model: 'gpt-4.1-mini', envKey: 'OPENAI_API_KEY' },          // $0.40/$1.60
     { model: 'or:google/gemini-3-flash-preview', envKey: 'OPENROUTER_API_KEY' }, // $0.15/$0.60
     { model: 'gemini-2.5-flash', envKey: 'GEMINI_API_KEY' },      // $0.15/$0.60
-    { model: 'kimi-k2.5', envKey: 'MOONSHOT_API_KEY' },           // $0.60/$2.40
-    { model: 'gpt-4.1-mini', envKey: 'OPENAI_API_KEY' },          // $0.40/$1.60
   ],
   analysis: [
-    { model: 'kimi-k2.5', envKey: 'MOONSHOT_API_KEY' },           // $0.60/$2.40
-    { model: 'or:google/gemini-3-flash-preview', envKey: 'OPENROUTER_API_KEY' }, // $0.15/$0.60
-    { model: 'groq:llama-3.3-70b-versatile', envKey: 'GROQ_API_KEY' },   // Free
+    { model: 'kimi-k2.5', envKey: 'MOONSHOT_API_KEY' },           // $0.60/$2.40 — strong reasoning
     { model: 'gpt-4.1-mini', envKey: 'OPENAI_API_KEY' },          // $0.40/$1.60
+    { model: 'or:google/gemini-3-flash-preview', envKey: 'OPENROUTER_API_KEY' }, // $0.15/$0.60
+    { model: 'groq:llama-3.3-70b-versatile', envKey: 'GROQ_API_KEY' },   // Free fallback
   ],
   chat: [
+    { model: 'gpt-4.1-mini', envKey: 'OPENAI_API_KEY' },          // $0.40/$1.60 — smart + fast
     { model: 'groq:llama-3.3-70b-versatile', envKey: 'GROQ_API_KEY' },   // Free
     { model: 'or:google/gemini-3-flash-preview', envKey: 'OPENROUTER_API_KEY' }, // $0.15/$0.60
-    { model: 'gpt-4.1-nano', envKey: 'OPENAI_API_KEY' },          // $0.10/$0.40
     { model: 'gemini-2.5-flash', envKey: 'GEMINI_API_KEY' },      // $0.15/$0.60
   ],
 };
