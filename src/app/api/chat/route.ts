@@ -470,17 +470,21 @@ const TOOL_TRIGGER_PATTERNS = [
 const TOOL_CAPABLE_MODEL = 'gpt-4.1-mini'; // Cheap, fast, excellent at tool calling
 const TOOL_CAPABLE_PROVIDER = 'openai';
 
-// Models known to have reliable tool calling (no need to upgrade)
-const RELIABLE_TOOL_MODELS = new Set([
-  'openai',    // All OpenAI models handle tools well
-  'anthropic', // Claude handles tools well
+// Providers known to have reliable tool calling (no need to upgrade)
+const RELIABLE_TOOL_PROVIDERS = new Set([
+  'openai',      // All OpenAI models handle tools well
+  'anthropic',   // Claude handles tools well
+  'openrouter',  // Our routed models (Grok 4.1 Fast = #1 tool calling, Qwen3 Coder, etc.)
+  'groq',        // Groq models support tool calling
+  'google',      // Gemini models support tool calling
+  'moonshot',    // Kimi K2.5 supports tool calling
 ]);
 
 function needsToolUpgrade(messages: any[], tools: any[], currentProvider: string): boolean {
   // No tools defined = no upgrade needed
   if (!tools || tools.length === 0) return false;
   // Already using a reliable provider = no upgrade needed
-  if (RELIABLE_TOOL_MODELS.has(currentProvider)) return false;
+  if (RELIABLE_TOOL_PROVIDERS.has(currentProvider)) return false;
 
   const lastUserMsg = [...messages].reverse().find((m: any) => m.role === 'user');
   if (!lastUserMsg?.content) return false;
@@ -595,7 +599,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Hard daily cap — prevent runaway bills
-    const HARD_CAP = Number(process.env.DAILY_COST_CAP_USD) || 2;
+    const HARD_CAP = Number(process.env.DAILY_COST_CAP_USD) || 15;
     if (costTodayUsd >= HARD_CAP) {
       return NextResponse.json(
         { error: `Daily cost cap reached ($${costTodayUsd.toFixed(2)} / $${HARD_CAP}). Try again tomorrow or raise the cap in env vars.` },
@@ -609,14 +613,20 @@ export async function POST(request: NextRequest) {
       costTodayUsd,
       sessionCostUsd,
     });
+    // Cost Router only overrides when: (a) Model Router didn't route, OR (b) budget exceeded
+    const modelRouterAlreadyRouted = routing.routed;
     if (!userExplicitModel && costDecision.selectedModel !== activeModel) {
-      console.log(
-        `[Cost Router] ${activeModel} → ${costDecision.selectedModel} (${costDecision.reason})`,
-      );
-      activeModel = costDecision.selectedModel;
-      activeProvider = getProvider(activeModel);
-      requestModel = activeModel;
-      requestProvider = activeProvider;
+      if (!modelRouterAlreadyRouted || costDecision.downgradedForBudget) {
+        console.log(
+          `[Cost Router] ${activeModel} → ${costDecision.selectedModel} (${costDecision.reason})`,
+        );
+        activeModel = costDecision.selectedModel;
+        activeProvider = getProvider(activeModel);
+        requestModel = activeModel;
+        requestProvider = activeProvider;
+      } else {
+        console.log(`[Cost Router] Skipped — Model Router already chose ${activeModel} (quality-first)`);
+      }
     }
     routingReason = costDecision.reason;
     estimatedCost = costDecision.estimatedCost;
