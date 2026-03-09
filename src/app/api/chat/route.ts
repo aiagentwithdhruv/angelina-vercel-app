@@ -536,8 +536,9 @@ export async function POST(request: NextRequest) {
     }
     const userText = lastUserMsg?.content || '';
 
-    // ── 0.1 Future Angelina: activation code check ──
-    if (isActivationEnabled()) {
+    // ── 0.1 Future Angelina: activation code check (skip for internal/Telegram) ──
+    const isInternalRequest = request.headers.get('x-internal-key') === process.env.WORKER_API_KEY;
+    if (isActivationEnabled() && !isInternalRequest) {
       const sessionId = userId || source || 'web-default';
 
       if (!isActivated(sessionId)) {

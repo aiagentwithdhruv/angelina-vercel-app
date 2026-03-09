@@ -110,7 +110,7 @@ async function callAngelinaChat(
   messages: ConversationMessage[],
   model: string,
   source: string = 'telegram',
-): Promise<{ response?: string; toolCalls?: any[]; model?: string; error?: string }> {
+): Promise<{ response?: string; message?: string; toolCalls?: any[]; model?: string; error?: string }> {
   try {
     const res = await fetch(`${BASE_URL}/api/chat`, {
       method: 'POST',
@@ -238,7 +238,7 @@ async function processMessage(ctx: Context, text: string): Promise<void> {
     }
 
     // Regular text response
-    const responseText = result.response || "I'm not sure how to respond to that.";
+    const responseText = result.response || result.message || "I'm not sure how to respond to that.";
     session.messages.push({ role: 'assistant', content: responseText });
 
     clearInterval(typingInterval);
