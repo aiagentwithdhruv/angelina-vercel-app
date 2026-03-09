@@ -18,6 +18,7 @@ import {
   getTaskQueueStats,
 } from '@/lib/autonomous-queue';
 import { pushToTelegram } from '@/lib/proactive-push';
+import { runHeartbeat, pushHeartbeatAlerts } from '@/lib/heartbeat';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -284,6 +285,21 @@ export async function GET(request: NextRequest) {
   const maxTasks = parseInt(url.searchParams.get('max') || '3');
   const results: Array<{ task_id: string; title: string; success: boolean; duration_ms: number; model?: string }> = [];
 
+  // ── Heartbeat: proactive checks BEFORE task execution ──
+  // Silent by default — only alerts when something needs attention. $0 cost.
+  let heartbeatResult: { alerts: any[]; checksRun: number; duration_ms: number } = { alerts: [], checksRun: 0, duration_ms: 0 };
+  try {
+    heartbeatResult = await runHeartbeat();
+    if (heartbeatResult.alerts.length > 0) {
+      console.log(`[Tick] Heartbeat: ${heartbeatResult.alerts.length} alert(s) in ${heartbeatResult.duration_ms}ms`);
+      await pushHeartbeatAlerts(heartbeatResult.alerts);
+    } else {
+      console.log(`[Tick] Heartbeat: all clear (${heartbeatResult.checksRun} checks, ${heartbeatResult.duration_ms}ms)`);
+    }
+  } catch (hbErr) {
+    console.warn('[Tick] Heartbeat failed (non-critical):', (hbErr as Error).message);
+  }
+
   try {
     // 1. Get pending tasks ready to execute
     const tasks = await getNextPendingTasks(maxTasks);
@@ -294,6 +310,11 @@ export async function GET(request: NextRequest) {
         message: 'No pending tasks',
         stats,
         executed: 0,
+        heartbeat: {
+          alerts: heartbeatResult.alerts.length,
+          checks: heartbeatResult.checksRun,
+          duration_ms: heartbeatResult.duration_ms,
+        },
       });
     }
 
@@ -374,6 +395,11 @@ export async function GET(request: NextRequest) {
       message: `Executed ${results.length} tasks`,
       results,
       stats,
+      heartbeat: {
+        alerts: heartbeatResult.alerts.length,
+        checks: heartbeatResult.checksRun,
+        duration_ms: heartbeatResult.duration_ms,
+      },
     });
   } catch (error) {
     console.error('[Tick] Error:', error);
