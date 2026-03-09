@@ -706,7 +706,7 @@ export async function POST(request: NextRequest) {
     // Unreliable providers (moonshot, openrouter, google, perplexity) output
     // raw XML text instead of proper tool_calls, breaking the UI.
     const buildProviderCall = async (provider: string, model: string, key: string) => {
-      const safeTools = RELIABLE_TOOL_MODELS.has(provider) ? tools : undefined;
+      const safeTools = RELIABLE_TOOL_PROVIDERS.has(provider) ? tools : undefined;
       switch (provider) {
         case 'anthropic':
           return callAnthropic(key, model, messages, safeTools);
@@ -746,7 +746,7 @@ export async function POST(request: NextRequest) {
     let finalProvider = usedProvider;
     let finalModel = usedModel;
 
-    if (!RELIABLE_TOOL_MODELS.has(usedProvider) && result.response && !result.toolCalls && tools?.length > 0) {
+    if (!RELIABLE_TOOL_PROVIDERS.has(usedProvider) && result.response && !result.toolCalls && tools?.length > 0) {
       const responseText = result.response as string;
       const TOOL_INTENT_PATTERN = /let me (update|check|create|send|search|save|call|move|mark|list|get|find|schedule|draft)|<function_calls>|<tool_call>|<invoke|I'll (update|check|create|send|search|save|call|move|mark|find)/i;
       if (TOOL_INTENT_PATTERN.test(responseText)) {
