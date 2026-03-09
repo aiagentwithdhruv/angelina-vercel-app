@@ -18,6 +18,7 @@ import { buildContextPulse } from '@/lib/context-pulse';
 import { checkBudgetAlert } from '@/lib/proactive-push';
 import { getPreferenceTracker } from '@/lib/preference-tracker';
 import { getAgentForTask } from '@/lib/agent-router';
+import { sanitizeUserInput } from '@/lib/security/prompt-guard';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -526,6 +527,9 @@ export async function POST(request: NextRequest) {
     const userExplicitModel = Boolean(model && model !== DEFAULT_MODEL);
 
     const lastUserMsg = [...messages].reverse().find((m: any) => m.role === 'user');
+    if (lastUserMsg && typeof lastUserMsg.content === 'string') {
+      lastUserMsg.content = sanitizeUserInput(lastUserMsg.content);
+    }
     const userText = lastUserMsg?.content || '';
 
     // ── 0.5 Agent Router: prepend specialized agent prompt for domain tasks ──

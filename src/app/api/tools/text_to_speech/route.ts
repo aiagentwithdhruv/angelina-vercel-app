@@ -8,8 +8,8 @@
  *   EURI_API_KEY — Euron API key
  */
 
-import { NextResponse } from 'next/server';
 import { withToolRetry } from '@/lib/tool-retry';
+import { apiSuccess, apiError } from '@/lib/api-response';
 
 const EURI_BASE_URL = 'https://api.euron.one/api/v1/euri';
 
@@ -19,18 +19,12 @@ export async function POST(request: Request) {
       const { input, speaker, language, pace } = await request.json();
 
       if (!input) {
-        return NextResponse.json({
-          success: false,
-          error: 'input is required. Provide the text to convert to speech.',
-        });
+        return apiError('MISSING_PARAM', 'input is required. Provide the text to convert to speech.', 400);
       }
 
       const euriKey = process.env.EURI_API_KEY;
       if (!euriKey) {
-        return NextResponse.json({
-          success: false,
-          error: 'EURI_API_KEY not configured.',
-        });
+        return apiError('MISSING_CONFIG', 'EURI_API_KEY not configured.', 500);
       }
 
       const targetLang = language || 'en-IN';
@@ -58,10 +52,7 @@ export async function POST(request: Request) {
       if (!response.ok) {
         const errorText = await response.text().catch(() => 'No details');
         console.error(`[TTS] Euri returned ${response.status}:`, errorText);
-        return NextResponse.json({
-          success: false,
-          error: `Euri TTS returned ${response.status}: ${errorText.slice(0, 300)}`,
-        });
+        return apiError('PROVIDER_ERROR', `Euri TTS returned ${response.status}`, response.status, errorText.slice(0, 300));
       }
 
       // Response is audio binary — convert to base64
@@ -70,8 +61,7 @@ export async function POST(request: Request) {
 
       console.log(`[TTS] Success | size=${audioBuffer.byteLength} bytes`);
 
-      return NextResponse.json({
-        success: true,
+      return apiSuccess({
         audio_base64: base64Audio,
         content_type: 'audio/wav',
         speaker: voiceId,
@@ -81,10 +71,7 @@ export async function POST(request: Request) {
       });
     } catch (error) {
       console.error('[TTS] Error:', error);
-      return NextResponse.json({
-        success: false,
-        error: error instanceof Error ? error.message : 'Text-to-speech failed',
-      });
+      return apiError('INTERNAL_ERROR', error instanceof Error ? error.message : 'Text-to-speech failed');
     }
   }, 'text_to_speech');
 }

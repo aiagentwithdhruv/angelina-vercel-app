@@ -8,8 +8,8 @@
  *   EURI_API_KEY — Euron API key (https://euron.one)
  */
 
-import { NextResponse } from 'next/server';
 import { withToolRetry } from '@/lib/tool-retry';
+import { apiSuccess, apiError } from '@/lib/api-response';
 
 const EURI_BASE_URL = 'https://api.euron.one/api/v1/euri';
 const EURI_IMAGE_MODEL = 'gemini-3-pro-image-preview';
@@ -20,18 +20,12 @@ export async function POST(request: Request) {
       const { prompt, image_size } = await request.json();
 
       if (!prompt) {
-        return NextResponse.json({
-          success: false,
-          error: 'prompt is required. Describe the image you want to generate.',
-        });
+        return apiError('MISSING_PARAM', 'prompt is required. Describe the image you want to generate.', 400);
       }
 
       const euriKey = process.env.EURI_API_KEY;
       if (!euriKey) {
-        return NextResponse.json({
-          success: false,
-          error: 'EURI_API_KEY not configured. Add your Euron API key in environment variables (get one at https://euron.one).',
-        });
+        return apiError('MISSING_CONFIG', 'EURI_API_KEY not configured. Add your Euron API key in environment variables (get one at https://euron.one).', 500);
       }
 
       // Map sizes to pixel dimensions for OpenAI-compatible API
@@ -61,10 +55,7 @@ export async function POST(request: Request) {
       if (!response.ok) {
         const errorText = await response.text().catch(() => 'No error details');
         console.error(`[Generate Image] Euri returned ${response.status}:`, errorText);
-        return NextResponse.json({
-          success: false,
-          error: `Euri returned ${response.status}: ${errorText.slice(0, 300)}`,
-        });
+        return apiError('PROVIDER_ERROR', `Euri returned ${response.status}`, response.status, errorText.slice(0, 300));
       }
 
       const data = await response.json();
@@ -81,16 +72,12 @@ export async function POST(request: Request) {
 
       if (!imageUrl) {
         console.error('[Generate Image] No image in Euri response:', JSON.stringify(data).slice(0, 200));
-        return NextResponse.json({
-          success: false,
-          error: 'Euri returned a response but no image was found.',
-        });
+        return apiError('EMPTY_RESULT', 'Euri returned a response but no image was found.', 502);
       }
 
       console.log(`[Generate Image] Success | provider=euri | model=${EURI_IMAGE_MODEL}`);
 
-      return NextResponse.json({
-        success: true,
+      return apiSuccess({
         image_url: imageUrl,
         prompt,
         size,
@@ -99,10 +86,7 @@ export async function POST(request: Request) {
       });
     } catch (error) {
       console.error('[Generate Image] Error:', error);
-      return NextResponse.json({
-        success: false,
-        error: error instanceof Error ? error.message : 'Image generation failed',
-      });
+      return apiError('INTERNAL_ERROR', error instanceof Error ? error.message : 'Image generation failed');
     }
   }, 'generate_image');
 }

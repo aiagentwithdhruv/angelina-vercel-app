@@ -9,8 +9,8 @@
  *   EURI_API_KEY — Euron API key
  */
 
-import { NextResponse } from 'next/server';
 import { withToolRetry } from '@/lib/tool-retry';
+import { apiSuccess, apiError } from '@/lib/api-response';
 
 const EURI_BASE_URL = 'https://api.euron.one/api/v1/euri';
 
@@ -20,18 +20,12 @@ export async function POST(request: Request) {
       const { input, model } = await request.json();
 
       if (!input) {
-        return NextResponse.json({
-          success: false,
-          error: 'input is required. Provide text or array of texts to embed.',
-        });
+        return apiError('MISSING_PARAM', 'input is required. Provide text or array of texts to embed.', 400);
       }
 
       const euriKey = process.env.EURI_API_KEY;
       if (!euriKey) {
-        return NextResponse.json({
-          success: false,
-          error: 'EURI_API_KEY not configured.',
-        });
+        return apiError('MISSING_CONFIG', 'EURI_API_KEY not configured.', 500);
       }
 
       const texts = Array.isArray(input) ? input : [input];
@@ -54,18 +48,14 @@ export async function POST(request: Request) {
       if (!response.ok) {
         const errorText = await response.text().catch(() => 'No details');
         console.error(`[Embeddings] Euri returned ${response.status}:`, errorText);
-        return NextResponse.json({
-          success: false,
-          error: `Euri embeddings returned ${response.status}: ${errorText.slice(0, 300)}`,
-        });
+        return apiError('PROVIDER_ERROR', `Euri embeddings returned ${response.status}`, response.status, errorText.slice(0, 300));
       }
 
       const data = await response.json();
 
       console.log(`[Embeddings] Success | vectors=${data.data?.length || 0} | dims=${data.data?.[0]?.embedding?.length || 0}`);
 
-      return NextResponse.json({
-        success: true,
+      return apiSuccess({
         embeddings: data.data,
         model: embeddingModel,
         usage: data.usage,
@@ -73,10 +63,7 @@ export async function POST(request: Request) {
       });
     } catch (error) {
       console.error('[Embeddings] Error:', error);
-      return NextResponse.json({
-        success: false,
-        error: error instanceof Error ? error.message : 'Embedding generation failed',
-      });
+      return apiError('INTERNAL_ERROR', error instanceof Error ? error.message : 'Embedding generation failed');
     }
   }, 'generate_embeddings');
 }
