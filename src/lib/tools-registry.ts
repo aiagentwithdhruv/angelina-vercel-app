@@ -270,6 +270,41 @@ export const TOOLS_REGISTRY: ToolDefinition[] = [
       num_slides: { type: 'number', description: 'Number of slides, default 8' },
     },
   },
+  {
+    name: 'twitter_post',
+    description: 'Post content on Twitter/X via Ghost Browser on VPS. Requires approval unless auto-post is enabled.',
+    endpoint: '/api/tools/twitter_post',
+    category: 'content',
+    needsEnv: 'OPENCLAW_VPS_URL',
+    parameters: {
+      content: { type: 'string', description: 'The tweet/post content', required: true },
+      image_url: { type: 'string', description: 'URL of image to attach' },
+    },
+  },
+  {
+    name: 'handdrawn_diagram',
+    description: 'Generate a hand-drawn whiteboard infographic prompt for Google Gemini. Use for visual explainers, diagrams, infographics in AiwithDhruv style.',
+    endpoint: '/api/tools/handdrawn_diagram',
+    category: 'content',
+    parameters: {
+      title: { type: 'string', description: 'Main title of the diagram', required: true },
+      subtitle: { type: 'string', description: 'Subtitle or description' },
+      sections: { type: 'string', description: 'Content sections (left column, center flow, right column, flash cards, stats)' },
+      ratio: { type: 'string', description: '16:9 (GitHub/YouTube), 4:5 (LinkedIn), 1:1 (Instagram). Default: 16:9' },
+    },
+  },
+  {
+    name: 'thumbnail_prompt',
+    description: 'Generate a photorealistic AI thumbnail prompt in Dhruv\'s signature style. Dark moody workspace, black t-shirt, MacBook, teal/purple neon overlays.',
+    endpoint: '/api/tools/thumbnail_prompt',
+    category: 'content',
+    parameters: {
+      topic: { type: 'string', description: 'Video/post topic', required: true },
+      hook: { type: 'string', description: 'Visual hook: ghost_copies, holographic_command, pipeline_flow, before_after, usb_hub, sleeping_ghosts, floating_logos' },
+      platform: { type: 'string', description: 'youtube, linkedin, twitter, instagram. Default: youtube' },
+      text_overlay: { type: 'string', description: 'Max 6 words for text overlay' },
+    },
+  },
 
   // ── Communication ──────────────────────────────────────────────────────
   {

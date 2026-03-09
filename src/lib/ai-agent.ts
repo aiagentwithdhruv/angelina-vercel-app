@@ -188,6 +188,40 @@ export const tools = {
     },
   },
 
+  // Twitter/X Posting
+  twitter_post: {
+    name: 'twitter_post',
+    description: 'Post content on Twitter/X via Ghost Browser on VPS. Requires approval unless auto-post is enabled.',
+    parameters: {
+      content: { type: 'string', description: 'The tweet/post content (max 280 chars for tweets, longer for threads)', required: true },
+      image_url: { type: 'string', description: 'URL of image to attach' },
+    },
+  },
+
+  // Handwritten Diagram Prompt
+  handdrawn_diagram: {
+    name: 'handdrawn_diagram',
+    description: 'Generate a hand-drawn whiteboard infographic prompt for Google Gemini image generation. Use when Dhruv asks for "hand-drawn visual", "whiteboard diagram", "visual explainer", "handwritten notes", "infographic". Returns a copy-paste prompt for Gemini.',
+    parameters: {
+      title: { type: 'string', description: 'Main title of the diagram', required: true },
+      subtitle: { type: 'string', description: 'Subtitle or description' },
+      sections: { type: 'string', description: 'Describe the content sections (left column, center flow, right column, flash cards, stats)' },
+      ratio: { type: 'string', description: '16:9 (GitHub/YouTube), 4:5 (LinkedIn), 1:1 (Instagram). Default: 16:9' },
+    },
+  },
+
+  // Thumbnail Prompt
+  thumbnail_prompt: {
+    name: 'thumbnail_prompt',
+    description: 'Generate a photorealistic AI thumbnail prompt in Dhruv\'s signature style. Use when Dhruv asks for "thumbnail", "YouTube thumbnail", "cover image", "hero image". Style: dark moody workspace, black t-shirt, MacBook, teal/purple neon overlays.',
+    parameters: {
+      topic: { type: 'string', description: 'Video/post topic for the thumbnail', required: true },
+      hook: { type: 'string', description: 'Visual hook: ghost_copies, holographic_command, pipeline_flow, before_after, usb_hub, sleeping_ghosts, floating_logos. Default: holographic_command' },
+      platform: { type: 'string', description: 'youtube (16:9), linkedin (4:5), twitter (16:9), instagram (1:1). Default: youtube' },
+      text_overlay: { type: 'string', description: 'Max 6 words for text overlay on the thumbnail' },
+    },
+  },
+
   // Presentations
   create_presentation: {
     name: 'create_presentation',
