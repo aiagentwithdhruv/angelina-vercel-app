@@ -5,7 +5,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
-import { TEXT_MODELS } from '@/lib/models';
+import { TEXT_MODELS, DEFAULT_TEXT_MODEL } from '@/lib/models';
 import { getCostToday, getSessionCost, logUsage } from '@/lib/usage-store';
 import { calculateCost } from '@/lib/pricing';
 import { memory } from '@/lib/memory';
@@ -522,14 +522,13 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const { messages, tools, model, source, userId, approvedTools } = body;
-    const DEFAULT_MODEL = 'gpt-4.1';
-    let activeModel = model || DEFAULT_MODEL;
+    let activeModel = model || DEFAULT_TEXT_MODEL;
     let activeProvider = getProvider(activeModel);
     requestModel = activeModel;
     requestProvider = activeProvider;
 
     // Did the user explicitly pick a model? If so, respect it.
-    const userExplicitModel = Boolean(model && model !== DEFAULT_MODEL);
+    const userExplicitModel = Boolean(model && model !== DEFAULT_TEXT_MODEL);
 
     const lastUserMsg = [...messages].reverse().find((m: any) => m.role === 'user');
     if (lastUserMsg && typeof lastUserMsg.content === 'string') {
