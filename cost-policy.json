@@ -7,35 +7,37 @@
   "estimatedOutputTokens": 500,
   "tiers": {
     "simple": [
-      "groq:mixtral-8x7b-32768",
+      "groq:llama-3.3-70b-versatile",
+      "groq:gemma2-9b-it",
       "gpt-4.1-nano",
-      "gemini-2.5-flash",
       "or:google/gemini-3-flash-preview",
-      "kimi-k2.5"
+      "gemini-2.5-flash"
     ],
     "moderate": [
       "groq:llama-3.3-70b-versatile",
-      "gpt-4o-mini",
       "gpt-4.1-mini",
+      "kimi-k2.5",
       "or:deepseek/deepseek-v3.2",
       "gemini-2.5-flash"
     ],
     "complex": [
-      "gpt-4.1-mini",
       "kimi-k2.5",
       "claude-sonnet-4-5-20250929",
-      "gpt-4.1"
+      "gpt-4.1",
+      "sonar-pro",
+      "or:google/gemini-3-pro-preview"
     ],
     "tool_call": [
       "gpt-4.1-mini",
       "gpt-4o-mini",
+      "gpt-4.1",
       "claude-sonnet-4-5-20250929"
     ],
     "critical": [
       "claude-opus-4-6",
       "gpt-4.1",
+      "kimi-k2.5",
       "or:google/gemini-3-pro-preview"
     ]
   }
 }
-
