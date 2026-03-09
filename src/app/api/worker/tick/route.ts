@@ -19,6 +19,7 @@ import {
 } from '@/lib/autonomous-queue';
 import { pushToTelegram } from '@/lib/proactive-push';
 import { runHeartbeat, pushHeartbeatAlerts } from '@/lib/heartbeat';
+import { getAgentForTask } from '@/lib/agent-router';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -188,8 +189,12 @@ async function executeAITask(
 
   const model = selectModelForTask({ title, description, priority });
 
+  // Route to specialized agent based on task content
+  const routing = getAgentForTask(title, description);
+  const agentPrompt = routing.agent.systemPrompt;
+
   try {
-    console.log(`[Tick:executeAI] POST ${url} model=${model}`);
+    console.log(`[Tick:executeAI] POST ${url} model=${model} agent=${routing.agent.label} (${routing.matchedKeywords.join(',')})`);
     const res = await fetch(url, {
       method: 'POST',
       headers: {
@@ -200,11 +205,11 @@ async function executeAITask(
         messages: [
           {
             role: 'system',
-            content: 'You are Angelina executing an autonomous task. Complete this task and return a concise result. Use tools if needed.',
+            content: `${agentPrompt}\n\nComplete this autonomous task concisely. Use tools if needed.`,
           },
           {
             role: 'user',
-            content: `AUTONOMOUS TASK: ${title}\n\nDetails: ${description || 'No additional details.'}\n\nComplete this task now. Be concise in your response.`,
+            content: `AUTONOMOUS TASK: ${title}\n\nDetails: ${description || 'No additional details.'}\n\nComplete this task now.`,
           },
         ],
         model,

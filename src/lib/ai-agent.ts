@@ -157,6 +157,47 @@ export const tools = {
     description: 'Get YouTube channel analytics and video performance data.',
     parameters: {},
   },
+
+  // VPS Control
+  vps_execute: {
+    name: 'vps_execute',
+    description: 'Execute commands on Dhruv\'s VPS via OpenClaw. Can run shell commands, manage Docker, check server health, or delegate to specialized agents.',
+    parameters: {
+      command: { type: 'string', description: 'The command or instruction to execute on the VPS', required: true },
+      agent: { type: 'string', description: 'Which OpenClaw agent to use: arjun, scout, creator, devops. Default: arjun' },
+    },
+  },
+
+  // Image Generation
+  generate_image: {
+    name: 'generate_image',
+    description: 'Generate AI images using FLUX model. Returns image URL. Use for thumbnails, social media graphics, diagrams.',
+    parameters: {
+      prompt: { type: 'string', description: 'Detailed image generation prompt', required: true },
+      image_size: { type: 'string', description: 'landscape_16_9, square, or portrait_4_3. Default: landscape_16_9' },
+    },
+  },
+
+  // LinkedIn Posting
+  linkedin_post: {
+    name: 'linkedin_post',
+    description: 'Post content on LinkedIn via Ghost Browser on VPS. Requires approval unless auto-post is enabled.',
+    parameters: {
+      content: { type: 'string', description: 'The LinkedIn post content', required: true },
+      image_url: { type: 'string', description: 'URL of image to attach' },
+    },
+  },
+
+  // Presentations
+  create_presentation: {
+    name: 'create_presentation',
+    description: 'Create professional presentations and slides using Gamma AI.',
+    parameters: {
+      topic: { type: 'string', description: 'Topic or title for the presentation', required: true },
+      style: { type: 'string', description: 'professional, creative, minimal' },
+      num_slides: { type: 'number', description: 'Number of slides, default 8' },
+    },
+  },
 };
 
 // Note: The actual chat handling uses /api/chat/route.ts with ANGELINA_SYSTEM_PROMPT
