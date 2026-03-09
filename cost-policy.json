@@ -15,23 +15,23 @@
     ],
     "moderate": [
       "or:x-ai/grok-4.1-fast",
+      "or:meta-llama/llama-4-maverick",
+      "or:qwen/qwen3-235b-a22b-2507",
       "gpt-4.1-mini",
-      "kimi-k2.5",
-      "groq:llama-3.3-70b-versatile",
-      "gemini-2.5-flash"
+      "kimi-k2.5"
     ],
     "complex": [
       "kimi-k2.5",
       "or:x-ai/grok-4.1-fast",
+      "or:qwen/qwen3-coder",
       "sonar",
-      "gpt-4.1",
-      "or:google/gemini-3-pro-preview"
+      "gpt-4.1"
     ],
     "tool_call": [
       "or:x-ai/grok-4.1-fast",
+      "or:x-ai/grok-code-fast-1",
       "gpt-4.1-mini",
-      "gpt-4.1",
-      "claude-sonnet-4-5-20250929"
+      "gpt-4.1"
     ],
     "critical": [
       "claude-opus-4-6",

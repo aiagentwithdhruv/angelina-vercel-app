@@ -1,12 +1,12 @@
 /**
  * Model Router — Quality-first task-aware routing ($5-10/day budget)
  *
- * Routes based on BOTH complexity AND task type:
- *   Coding      → Kimi K2.5 (SOTA coding, $0.60)
+ * Real-time tested (Mar 9 2026) — all scored 5/5 on complex coding task:
+ *   Coding      → Kimi K2.5 (SOTA) → Qwen3 Coder 480B ($0.22, tested 22s)
  *   Research    → Sonar (built-in web search, $1)
- *   Content     → Kimi K2.5 (excellent writing, $0.60)
- *   Chat        → Grok 4.1 Fast (smart + cheap, $0.20)
- *   Analysis    → Grok 4.1 Fast (#1 legal/finance reasoning, $0.20)
+ *   Content     → Kimi K2.5 → Llama 4 Maverick ($0.15, tested 1.8s!)
+ *   Chat        → Grok 4.1 Fast (#1 tool calling for MCP/agent)
+ *   Analysis    → Grok 4.1 Fast → Qwen3 235B ($0.07, tested 19s)
  *   Simple      → Groq Llama (free, instant)
  *
  * Only applies when user hasn't manually selected a model.
@@ -94,39 +94,39 @@ interface ModelChoice {
   envKey: string;  // Required env var for this provider
 }
 
-// QUALITY-FIRST routing ($5-10/day budget)
+// QUALITY-FIRST routing ($5-10/day budget) — real-time tested Mar 9 2026
 // Best model per task type, with cheaper fallbacks if provider missing.
 // Claude Opus ($15/$75) and Sonar Pro ($3/$15) = MANUAL ONLY (too expensive for auto)
 const TASK_ROUTING: Record<TaskType, ModelChoice[]> = {
   coding: [
     { model: 'kimi-k2.5', envKey: 'MOONSHOT_API_KEY' },           // $0.60/$2.40 — SOTA coding
-    { model: 'or:x-ai/grok-4.1-fast', envKey: 'OPENROUTER_API_KEY' },   // $0.20/$0.50 — strong + cheap
+    { model: 'or:qwen/qwen3-coder', envKey: 'OPENROUTER_API_KEY' },     // $0.22/$1.00 — 480B coder, tested 5/5 22s
+    { model: 'or:x-ai/grok-code-fast-1', envKey: 'OPENROUTER_API_KEY' },// $0.20/$1.50 — xAI coding model, tested 5/5 17s
     { model: 'gpt-4.1-mini', envKey: 'OPENAI_API_KEY' },          // $0.40/$1.60
-    { model: 'groq:llama-3.3-70b-versatile', envKey: 'GROQ_API_KEY' },   // Free fallback
   ],
   research: [
     { model: 'sonar', envKey: 'PERPLEXITY_API_KEY' },             // $1/$1 — built-in web search
-    { model: 'or:x-ai/grok-4.1-fast', envKey: 'OPENROUTER_API_KEY' },   // $0.20/$0.50
+    { model: 'or:x-ai/grok-4.1-fast', envKey: 'OPENROUTER_API_KEY' },   // $0.20/$0.50 — #1 tool calling
     { model: 'gpt-4.1-mini', envKey: 'OPENAI_API_KEY' },          // $0.40/$1.60
     { model: 'gemini-2.5-flash', envKey: 'GEMINI_API_KEY' },      // $0.15/$0.60
   ],
   content: [
     { model: 'kimi-k2.5', envKey: 'MOONSHOT_API_KEY' },           // $0.60/$2.40 — great writer
-    { model: 'or:x-ai/grok-4.1-fast', envKey: 'OPENROUTER_API_KEY' },   // $0.20/$0.50 — marketing #5
+    { model: 'or:meta-llama/llama-4-maverick', envKey: 'OPENROUTER_API_KEY' }, // $0.15/$0.60 — tested 5/5, 1.8s!
+    { model: 'or:x-ai/grok-4.1-fast', envKey: 'OPENROUTER_API_KEY' },   // $0.20/$0.50
     { model: 'gpt-4.1-mini', envKey: 'OPENAI_API_KEY' },          // $0.40/$1.60
-    { model: 'gemini-2.5-flash', envKey: 'GEMINI_API_KEY' },      // $0.15/$0.60
   ],
   analysis: [
-    { model: 'or:x-ai/grok-4.1-fast', envKey: 'OPENROUTER_API_KEY' },   // $0.20/$0.50 — #1 legal, #2 finance
+    { model: 'or:x-ai/grok-4.1-fast', envKey: 'OPENROUTER_API_KEY' },   // $0.20/$0.50 — #1 legal, #2 finance, thorough
+    { model: 'or:qwen/qwen3-235b-a22b-2507', envKey: 'OPENROUTER_API_KEY' }, // $0.07/$0.10 — 235B params, tested 5/5 19s
     { model: 'kimi-k2.5', envKey: 'MOONSHOT_API_KEY' },           // $0.60/$2.40
     { model: 'gpt-4.1-mini', envKey: 'OPENAI_API_KEY' },          // $0.40/$1.60
-    { model: 'groq:llama-3.3-70b-versatile', envKey: 'GROQ_API_KEY' },   // Free fallback
   ],
   chat: [
-    { model: 'or:x-ai/grok-4.1-fast', envKey: 'OPENROUTER_API_KEY' },   // $0.20/$0.50 — smart + cheap
+    { model: 'or:x-ai/grok-4.1-fast', envKey: 'OPENROUTER_API_KEY' },   // $0.20/$0.50 — #1 tool calling (MCP/agent)
+    { model: 'or:meta-llama/llama-4-maverick', envKey: 'OPENROUTER_API_KEY' }, // $0.15/$0.60 — blazing 1.8s, 1M ctx
     { model: 'gpt-4.1-mini', envKey: 'OPENAI_API_KEY' },          // $0.40/$1.60
-    { model: 'groq:llama-3.3-70b-versatile', envKey: 'GROQ_API_KEY' },   // Free
-    { model: 'gemini-2.5-flash', envKey: 'GEMINI_API_KEY' },      // $0.15/$0.60
+    { model: 'groq:llama-3.3-70b-versatile', envKey: 'GROQ_API_KEY' },   // Free fallback
   ],
 };
 
