@@ -38,6 +38,7 @@ export const MODEL_PRICING: Record<string, ModelPricing> = {
   'deepseek-v3':   { inputPer1M: 0.27,  outputPer1M: 1.10 },
   'deepseek-r1':   { inputPer1M: 0.55,  outputPer1M: 2.19 },
   'kimi-k2':       { inputPer1M: 0.60,  outputPer1M: 2.40 },
+  'grok-4.1-fast': { inputPer1M: 0.20,  outputPer1M: 0.50 },
   'grok-4':        { inputPer1M: 3.00,  outputPer1M: 15.00 },
   'llama-4':       { inputPer1M: 0.15,  outputPer1M: 0.60 },
   'qwen3-coder':   { inputPer1M: 0.50,  outputPer1M: 2.00 },
