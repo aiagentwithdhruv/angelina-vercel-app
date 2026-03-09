@@ -94,36 +94,38 @@ interface ModelChoice {
   envKey: string;  // Required env var for this provider
 }
 
+// COST-FIRST routing: Groq (free) → Gemini Flash ($0.15) → GPT-nano ($0.10) → task-specific
+// Expensive models (Claude $3/$15, Sonar $1/$1, GPT-4.1 $2/$8) = MANUAL ONLY
 const TASK_ROUTING: Record<TaskType, ModelChoice[]> = {
   coding: [
-    { model: 'kimi-k2.5', envKey: 'MOONSHOT_API_KEY' },           // SOTA coding
-    { model: 'claude-sonnet-4-5-20250929', envKey: 'ANTHROPIC_API_KEY' }, // Great at code
-    { model: 'gpt-4.1', envKey: 'OPENAI_API_KEY' },               // Strong fallback
-    { model: 'or:deepseek/deepseek-v3.2', envKey: 'OPENROUTER_API_KEY' },
+    { model: 'kimi-k2.5', envKey: 'MOONSHOT_API_KEY' },           // $0.60/$2.40 — worth it for code quality
+    { model: 'or:deepseek/deepseek-v3.2', envKey: 'OPENROUTER_API_KEY' }, // $0.27/$1.10
+    { model: 'groq:llama-3.3-70b-versatile', envKey: 'GROQ_API_KEY' },   // Free
+    { model: 'gpt-4.1-mini', envKey: 'OPENAI_API_KEY' },          // $0.40/$1.60
   ],
   research: [
-    { model: 'sonar', envKey: 'PERPLEXITY_API_KEY' },             // Web search, $1/$1 per 1M
-    { model: 'or:google/gemini-3-flash-preview', envKey: 'OPENROUTER_API_KEY' },
-    { model: 'gemini-2.5-flash', envKey: 'GEMINI_API_KEY' },
-    { model: 'gpt-4.1-mini', envKey: 'OPENAI_API_KEY' },
+    { model: 'or:google/gemini-3-flash-preview', envKey: 'OPENROUTER_API_KEY' }, // $0.15/$0.60
+    { model: 'gemini-2.5-flash', envKey: 'GEMINI_API_KEY' },      // $0.15/$0.60
+    { model: 'groq:llama-3.3-70b-versatile', envKey: 'GROQ_API_KEY' },   // Free
+    { model: 'gpt-4.1-mini', envKey: 'OPENAI_API_KEY' },          // $0.40/$1.60
   ],
   content: [
-    { model: 'claude-sonnet-4-5-20250929', envKey: 'ANTHROPIC_API_KEY' }, // Best at writing
-    { model: 'gpt-4.1', envKey: 'OPENAI_API_KEY' },
-    { model: 'kimi-k2.5', envKey: 'MOONSHOT_API_KEY' },
-    { model: 'or:google/gemini-3-flash-preview', envKey: 'OPENROUTER_API_KEY' },
+    { model: 'or:google/gemini-3-flash-preview', envKey: 'OPENROUTER_API_KEY' }, // $0.15/$0.60
+    { model: 'gemini-2.5-flash', envKey: 'GEMINI_API_KEY' },      // $0.15/$0.60
+    { model: 'kimi-k2.5', envKey: 'MOONSHOT_API_KEY' },           // $0.60/$2.40
+    { model: 'gpt-4.1-mini', envKey: 'OPENAI_API_KEY' },          // $0.40/$1.60
   ],
   analysis: [
-    { model: 'gpt-4.1', envKey: 'OPENAI_API_KEY' },               // Strong reasoning
-    { model: 'claude-sonnet-4-5-20250929', envKey: 'ANTHROPIC_API_KEY' },
-    { model: 'kimi-k2.5', envKey: 'MOONSHOT_API_KEY' },
-    { model: 'gemini-2.5-pro', envKey: 'GEMINI_API_KEY' },
+    { model: 'kimi-k2.5', envKey: 'MOONSHOT_API_KEY' },           // $0.60/$2.40
+    { model: 'or:google/gemini-3-flash-preview', envKey: 'OPENROUTER_API_KEY' }, // $0.15/$0.60
+    { model: 'groq:llama-3.3-70b-versatile', envKey: 'GROQ_API_KEY' },   // Free
+    { model: 'gpt-4.1-mini', envKey: 'OPENAI_API_KEY' },          // $0.40/$1.60
   ],
   chat: [
-    { model: 'groq:llama-3.3-70b-versatile', envKey: 'GROQ_API_KEY' }, // Fastest, free
-    { model: 'or:google/gemini-3-flash-preview', envKey: 'OPENROUTER_API_KEY' },
-    { model: 'gpt-4.1-mini', envKey: 'OPENAI_API_KEY' },
-    { model: 'gemini-2.5-flash', envKey: 'GEMINI_API_KEY' },
+    { model: 'groq:llama-3.3-70b-versatile', envKey: 'GROQ_API_KEY' },   // Free
+    { model: 'or:google/gemini-3-flash-preview', envKey: 'OPENROUTER_API_KEY' }, // $0.15/$0.60
+    { model: 'gpt-4.1-nano', envKey: 'OPENAI_API_KEY' },          // $0.10/$0.40
+    { model: 'gemini-2.5-flash', envKey: 'GEMINI_API_KEY' },      // $0.15/$0.60
   ],
 };
 
