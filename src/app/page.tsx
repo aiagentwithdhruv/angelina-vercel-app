@@ -477,6 +477,13 @@ function CommandCenterInner() {
           break;
         }
 
+        // Future Angelina: activation code responses
+        if (data.locked || data.activated) {
+          finalText = data.message;
+          finalModel = textModel;
+          break;
+        }
+
         // No tool calls — we have the final text response
         if (!data.toolCalls || data.toolCalls.length === 0) {
           finalText = data.response || "I couldn't process that. Please try again.";

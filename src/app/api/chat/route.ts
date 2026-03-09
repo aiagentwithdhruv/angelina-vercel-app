@@ -19,6 +19,7 @@ import { checkBudgetAlert } from '@/lib/proactive-push';
 import { getPreferenceTracker } from '@/lib/preference-tracker';
 import { getAgentForTask } from '@/lib/agent-router';
 import { sanitizeUserInput } from '@/lib/security/prompt-guard';
+import { isActivated, tryActivate, refreshActivation, isActivationEnabled } from '@/lib/security/activation-guard';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -531,6 +532,31 @@ export async function POST(request: NextRequest) {
       lastUserMsg.content = sanitizeUserInput(lastUserMsg.content);
     }
     const userText = lastUserMsg?.content || '';
+
+    // ── 0.1 Future Angelina: activation code check ──
+    if (isActivationEnabled()) {
+      const sessionId = userId || source || 'web-default';
+
+      if (!isActivated(sessionId)) {
+        // Check if this message IS the activation code
+        if (typeof userText === 'string' && tryActivate(sessionId, userText)) {
+          // Code accepted — respond and return
+          return NextResponse.json({
+            message: '🔓 Future Angelina activated. I\'m fully operational now. What do you need?',
+            activated: true,
+          });
+        }
+
+        // Not activated, not the right code — ask for it
+        return NextResponse.json({
+          message: '🔒 Future Angelina is locked. Please provide the activation code to continue.',
+          locked: true,
+        });
+      }
+
+      // Session is active — refresh the 30-min timer
+      refreshActivation(sessionId);
+    }
 
     // ── 0.5 Agent Router: prepend specialized agent prompt for domain tasks ──
     const agentRouting = getAgentForTask(typeof userText === 'string' ? userText : '');

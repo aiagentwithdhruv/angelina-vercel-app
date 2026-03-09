@@ -315,7 +315,7 @@ async function executeTool(toolName, args) {
 /**
  * Send message to chat API, handle tool calls recursively, return final text response
  */
-async function chatWithTools(session, model) {
+async function chatWithTools(session, model, telegramUserId) {
   const res = await fetch(`${BASE_URL}/api/chat`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -323,6 +323,7 @@ async function chatWithTools(session, model) {
       messages: session,
       model,
       source: 'telegram',
+      userId: telegramUserId ? `tg-${telegramUserId}` : undefined,
       tools: TOOLS,
     }),
   });
@@ -442,11 +443,23 @@ async function processTextMessage(ctx, text) {
   }, 4000);
 
   try {
-    const data = await chatWithTools(session, 'google/gemini-2.5-flash-preview');
+    const data = await chatWithTools(session, 'google/gemini-2.5-flash-preview', userId);
     clearInterval(typingInterval);
 
     if (data.error) {
       await ctx.reply(`Error: ${data.error}`);
+      return;
+    }
+
+    // Future Angelina: handle activation responses
+    if (data.locked) {
+      session.pop(); // Don't keep locked attempts in history
+      await ctx.reply(data.message);
+      return;
+    }
+    if (data.activated) {
+      session.pop(); // Don't keep activation code in history
+      await ctx.reply(data.message);
       return;
     }
 
