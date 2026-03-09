@@ -164,6 +164,12 @@ export function useGeminiLiveVoice(options: UseGeminiLiveVoiceOptions = {}): Use
     try {
       const data = JSON.parse(event.data);
 
+      // Log all non-audio events for debugging
+      const hasAudio = data.serverContent?.modelTurn?.parts?.some((p: any) => p.inlineData?.mimeType?.startsWith("audio/"));
+      if (!hasAudio) {
+        console.log("[GeminiLive] Event:", JSON.stringify(data).slice(0, 300));
+      }
+
       // Setup complete
       if (data.setupComplete) {
         console.log("[GeminiLive] Setup complete");
@@ -330,10 +336,24 @@ export function useGeminiLiveVoice(options: UseGeminiLiveVoiceOptions = {}): Use
         ws.send(JSON.stringify(setup));
         setupSentRef.current = true;
         wsRef.current = ws;
-        resolve();
       };
 
-      ws.onmessage = handleMessage;
+      // Wait for setupComplete before resolving
+      ws.onmessage = (event: MessageEvent) => {
+        try {
+          const data = JSON.parse(event.data);
+          if (data.setupComplete) {
+            console.log("[GeminiLive] Setup complete — ready for audio");
+            setIsConnected(true);
+            // Now switch to the main handler for all future messages
+            ws.onmessage = handleMessage;
+            resolve();
+            return;
+          }
+        } catch {}
+        // Forward any non-setup messages to main handler
+        handleMessage(event);
+      };
 
       ws.onerror = () => {
         const msg = "Gemini Live connection error";

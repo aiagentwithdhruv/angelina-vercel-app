@@ -32,17 +32,19 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message }) => {
   const isUser = message.role === 'user';
 
   return (
-    <div className={clsx('flex items-start space-x-3 message-enter', isUser && 'flex-row-reverse space-x-reverse')}>
-      {/* Avatar */}
-      <Avatar
-        size="sm"
-        isAI={!isUser}
-        fallback={isUser ? 'D' : undefined}
-        className={isUser ? 'bg-steel-mid' : undefined}
-      />
+    <div className={clsx('flex items-start message-enter', isUser ? 'flex-row-reverse' : '', 'sm:space-x-3', isUser && 'sm:space-x-reverse')}>
+      {/* Avatar — hidden on mobile for more chat space */}
+      <div className="hidden sm:block">
+        <Avatar
+          size="sm"
+          isAI={!isUser}
+          fallback={isUser ? 'D' : undefined}
+          className={isUser ? 'bg-steel-mid' : undefined}
+        />
+      </div>
 
       {/* Bubble */}
-      <div className={clsx('flex flex-col max-w-[85%] sm:max-w-[70%]', isUser && 'items-end')}>
+      <div className={clsx('flex flex-col max-w-[92%] sm:max-w-[70%]', isUser && 'items-end')}>
         <div
           className={clsx(
             'px-3 py-2 text-sm leading-normal sm:px-4 sm:py-3 sm:text-base sm:leading-relaxed rounded-2xl',
