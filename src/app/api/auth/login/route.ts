@@ -8,7 +8,10 @@ import { cookies } from 'next/headers';
 import crypto from 'crypto';
 
 function createSessionToken(email: string): string {
-  const secret = process.env.AUTH_SECRET || process.env.AUTH_PASSWORD || 'angelina-default-secret';
+  const secret = process.env.AUTH_SECRET || process.env.AUTH_PASSWORD;
+  if (!secret) {
+    throw new Error('AUTH_SECRET or AUTH_PASSWORD must be set. Cannot create session token without a secret.');
+  }
   const payload = `${email}:${Date.now()}`;
   const signature = crypto.createHmac('sha256', secret).update(payload).digest('hex');
   return Buffer.from(`${payload}:${signature}`).toString('base64');
@@ -21,18 +24,13 @@ export async function POST(request: Request) {
     const validEmail = process.env.AUTH_EMAIL;
     const validPassword = process.env.AUTH_PASSWORD;
 
-    // If auth is not configured, allow access (dev mode)
+    // Require auth env vars — no silent dev mode bypass
     if (!validEmail || !validPassword) {
-      const token = createSessionToken(email || 'dev');
-      const cookieStore = await cookies();
-      cookieStore.set('angelina_session', token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
-        maxAge: 7 * 24 * 3600,
-        path: '/',
-      });
-      return NextResponse.json({ success: true });
+      console.error('[Auth] AUTH_EMAIL and AUTH_PASSWORD must be set.');
+      return NextResponse.json(
+        { success: false, error: 'Server auth not configured. Set AUTH_EMAIL and AUTH_PASSWORD.' },
+        { status: 500 },
+      );
     }
 
     // Validate credentials

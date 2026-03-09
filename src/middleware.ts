@@ -10,6 +10,7 @@ import { NextRequest, NextResponse } from 'next/server';
 const PUBLIC_PATHS = [
   '/login',
   '/api/auth',           // All auth routes (login, logout, google oauth)
+  '/api/health',         // Health check — no auth required
   '/api/telegram',
   '/api/worker/digest',
   '/api/worker/tick',
