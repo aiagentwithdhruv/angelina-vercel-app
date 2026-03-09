@@ -61,15 +61,16 @@ export const TEXT_MODELS: TextModel[] = [
 ];
 
 export const VOICE_MODELS = [
-  { id: 'gpt-4o-realtime-preview-2024-12-17', label: 'GPT-4o Realtime', description: 'Full quality' },
-  { id: 'gpt-4o-mini-realtime-preview-2024-12-17', label: 'GPT-4o Mini Realtime', description: 'Faster + cheaper' },
+  { id: 'gemini-live', label: 'Gemini Live', description: 'Free, natural voice', provider: 'google' as const },
+  { id: 'gpt-4o-mini-realtime-preview-2024-12-17', label: 'GPT-4o Mini Realtime', description: 'OpenAI, $0.05/min', provider: 'openai' as const },
+  { id: 'gpt-4o-realtime-preview-2024-12-17', label: 'GPT-4o Realtime', description: 'OpenAI premium, $0.50/min', provider: 'openai' as const },
 ] as const;
 
 export type TextModelId = string;
 export type VoiceModelId = typeof VOICE_MODELS[number]['id'];
 
 export const DEFAULT_TEXT_MODEL = 'or:google/gemini-3-flash-preview';
-export const DEFAULT_VOICE_MODEL: VoiceModelId = 'gpt-4o-mini-realtime-preview-2024-12-17';
+export const DEFAULT_VOICE_MODEL: VoiceModelId = 'gemini-live';
 
 export const ALLOWED_TEXT_MODELS: string[] = TEXT_MODELS.map(m => m.id);
 export const ALLOWED_VOICE_MODELS: string[] = VOICE_MODELS.map(m => m.id);

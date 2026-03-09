@@ -57,6 +57,12 @@ export interface RealtimePricing {
 }
 
 const REALTIME_PRICING: Record<string, RealtimePricing> = {
+  'gemini-live': {
+    audioInputPer1M: 1.00,
+    audioOutputPer1M: 4.00,
+    textInputPer1M: 0.15,
+    textOutputPer1M: 0.60,
+  },
   'gpt-4o-realtime': {
     audioInputPer1M: 100.00,
     audioOutputPer1M: 200.00,

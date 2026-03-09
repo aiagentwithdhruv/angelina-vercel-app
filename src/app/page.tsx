@@ -10,6 +10,7 @@ import { MessageBubble, Message } from '@/components/chat/message-bubble';
 import { ChatInput } from '@/components/ui/input';
 import { VoiceFAB } from '@/components/ui/voice-fab';
 import { useRealtimeVoice } from '@/hooks/useRealtimeVoice';
+import { useGeminiLiveVoice } from '@/hooks/useGeminiLiveVoice';
 import { ANGELINA_SYSTEM_PROMPT } from '@/lib/angelina-context';
 import { detectUpgradeNeeded, UpgradeSuggestion } from '@/lib/smart-upgrade';
 import { diagnoseToolFailure } from '@/lib/self-fix';
@@ -107,38 +108,42 @@ function CommandCenterInner() {
     }]);
   }, []);
 
-  // Use the EXACT Sales Coach hook
-  const {
-    isConnected,
-    isListening,
-    isSpeaking,
-    userTranscript,
-    aiTranscript,
-    error,
-    connect,
-    disconnect,
-    startListening,
-    stopListening,
-  } = useRealtimeVoice({
-    voice: 'shimmer',
-    model: voiceModel,
-    systemPrompt: ANGELINA_SYSTEM_PROMPT,
-    onTranscript: (text, isFinal) => {
+  // Voice callbacks (shared between providers)
+  const voiceCallbacks = {
+    onTranscript: useCallback((text: string, isFinal: boolean) => {
       if (isFinal && text.trim()) {
         setShowHero(false);
         addMessage('user', text);
       }
-    },
-    onAIResponse: (text) => {
+    }, [addMessage]),
+    onAIResponse: useCallback((text: string) => {
       if (text.trim()) {
         addMessage('assistant', text, { model: VOICE_MODELS.find(m => m.id === voiceModel)?.label || voiceModel });
         addActivity('voice', 'Voice Chat', text.slice(0, 50) + (text.length > 50 ? '...' : ''), 'success');
       }
-    },
-    onError: (err) => {
-      console.error('Voice error:', err);
-    },
+    }, [addMessage, addActivity, voiceModel]),
+    onError: useCallback((err: string) => console.error('Voice error:', err), []),
+  };
+
+  // OpenAI Realtime voice (fallback)
+  const openaiVoice = useRealtimeVoice({
+    voice: 'shimmer',
+    model: voiceModel,
+    systemPrompt: ANGELINA_SYSTEM_PROMPT,
+    ...voiceCallbacks,
   });
+
+  // Gemini Live voice (default — free, natural voice)
+  const geminiVoice = useGeminiLiveVoice({
+    voice: 'Zephyr',
+    systemPrompt: ANGELINA_SYSTEM_PROMPT,
+    ...voiceCallbacks,
+  });
+
+  // Select active voice provider based on model
+  const isGeminiVoice = voiceModel === 'gemini-live';
+  const { isConnected, isListening, isSpeaking, userTranscript, aiTranscript, error, connect, disconnect, startListening, stopListening } =
+    isGeminiVoice ? geminiVoice : openaiVoice;
 
   // Auto-scroll to bottom on new messages
   useEffect(() => {
