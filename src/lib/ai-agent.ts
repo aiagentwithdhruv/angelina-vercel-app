@@ -198,6 +198,39 @@ export const tools = {
       num_slides: { type: 'number', description: 'Number of slides, default 8' },
     },
   },
+
+  // Speech-to-Text (Euri — Sarvam STT)
+  transcribe_audio: {
+    name: 'transcribe_audio',
+    description: 'Transcribe audio/voice messages to text. Supports Hindi and English. Use for Telegram voice messages, meeting recordings, or any audio file.',
+    parameters: {
+      file: { type: 'string', description: 'Audio file (wav, mp3, flac, ogg, m4a). Max 25MB.', required: true },
+      language_code: { type: 'string', description: 'BCP-47 language code: en-IN, hi-IN. Default: en-IN' },
+      with_timestamps: { type: 'boolean', description: 'Include word-level timestamps. Default: false' },
+    },
+  },
+
+  // Text-to-Speech (Euri — Sarvam TTS)
+  text_to_speech: {
+    name: 'text_to_speech',
+    description: 'Convert text to natural speech audio. Supports Hindi and English voices. Use when Dhruv asks to "say this", "read this aloud", or for voice notifications.',
+    parameters: {
+      input: { type: 'string', description: 'Text to convert to speech', required: true },
+      speaker: { type: 'string', description: 'Voice ID. Default: shubh' },
+      language: { type: 'string', description: 'Target language: en-IN, hi-IN. Default: en-IN' },
+      pace: { type: 'number', description: 'Speech pace (0.5-2.0). Default: 1' },
+    },
+  },
+
+  // Embeddings (Euri)
+  generate_embeddings: {
+    name: 'generate_embeddings',
+    description: 'Generate vector embeddings for text. Use for semantic search, RAG, memory similarity.',
+    parameters: {
+      input: { type: 'string', description: 'Text or array of texts to embed', required: true },
+      model: { type: 'string', description: 'Embedding model. Default: text-embedding-3-small' },
+    },
+  },
 };
 
 // Note: The actual chat handling uses /api/chat/route.ts with ANGELINA_SYSTEM_PROMPT

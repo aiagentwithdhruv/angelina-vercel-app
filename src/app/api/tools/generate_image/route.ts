@@ -1,19 +1,18 @@
 /**
  * Generate Image Tool — Phase 6 (Content Creation)
  *
- * Generates images using fal.ai's Flux Dev model.
- * Prompt in, image URL out.
+ * Generates images using Euri API (gemini-3-pro-image-preview).
+ * Free 1L tokens / 50 images through Euron.
  *
  * Env:
- *   FAL_KEY — fal.ai API key (https://fal.ai/dashboard/keys)
+ *   EURI_API_KEY — Euron API key (https://euron.one)
  */
 
 import { NextResponse } from 'next/server';
 import { withToolRetry } from '@/lib/tool-retry';
 
-type ImageSize = 'landscape_16_9' | 'square' | 'portrait_4_3';
-
-const VALID_SIZES: ImageSize[] = ['landscape_16_9', 'square', 'portrait_4_3'];
+const EURI_BASE_URL = 'https://api.euron.one/api/v1/euri';
+const EURI_IMAGE_MODEL = 'gemini-3-pro-image-preview';
 
 export async function POST(request: Request) {
   return withToolRetry(async () => {
@@ -27,58 +26,76 @@ export async function POST(request: Request) {
         });
       }
 
-      const falKey = process.env.FAL_KEY;
-      if (!falKey) {
+      const euriKey = process.env.EURI_API_KEY;
+      if (!euriKey) {
         return NextResponse.json({
           success: false,
-          error: 'FAL_KEY not configured. Add your fal.ai API key in environment variables (get one at https://fal.ai/dashboard/keys).',
+          error: 'EURI_API_KEY not configured. Add your Euron API key in environment variables (get one at https://euron.one).',
         });
       }
 
-      const size: ImageSize = VALID_SIZES.includes(image_size) ? image_size : 'landscape_16_9';
+      // Map sizes to pixel dimensions for OpenAI-compatible API
+      const sizeMap: Record<string, string> = {
+        landscape_16_9: '1792x1024',
+        square: '1024x1024',
+        portrait_4_3: '1024x1792',
+      };
+      const size = sizeMap[image_size] || '1024x1024';
 
-      console.log(`[Generate Image] Requesting fal.ai | size=${size} | prompt="${prompt.slice(0, 80)}..."`);
+      console.log(`[Generate Image] Euri (${EURI_IMAGE_MODEL}) | size=${size} | prompt="${prompt.slice(0, 80)}..."`);
 
-      const response = await fetch('https://queue.fal.run/fal-ai/flux/dev', {
+      const response = await fetch(`${EURI_BASE_URL}/images/generations`, {
         method: 'POST',
         headers: {
-          'Authorization': `Key ${falKey}`,
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${euriKey}`,
         },
         body: JSON.stringify({
+          model: EURI_IMAGE_MODEL,
           prompt,
-          image_size: size,
-          num_images: 1,
+          n: 1,
+          size,
         }),
       });
 
       if (!response.ok) {
         const errorText = await response.text().catch(() => 'No error details');
-        console.error(`[Generate Image] fal.ai returned ${response.status}:`, errorText);
+        console.error(`[Generate Image] Euri returned ${response.status}:`, errorText);
         return NextResponse.json({
           success: false,
-          error: `fal.ai returned ${response.status}: ${errorText.slice(0, 300)}`,
+          error: `Euri returned ${response.status}: ${errorText.slice(0, 300)}`,
         });
       }
 
       const data = await response.json();
 
-      const imageUrl = data.images?.[0]?.url;
+      // Euri returns OpenAI-compatible format: { data: [{ url } | { b64_json }] }
+      const imageData = data.data?.[0];
+      let imageUrl: string | undefined;
+
+      if (imageData?.url) {
+        imageUrl = imageData.url;
+      } else if (imageData?.b64_json) {
+        imageUrl = `data:image/png;base64,${imageData.b64_json}`;
+      }
+
       if (!imageUrl) {
-        console.error('[Generate Image] No image URL in response:', JSON.stringify(data).slice(0, 200));
+        console.error('[Generate Image] No image in Euri response:', JSON.stringify(data).slice(0, 200));
         return NextResponse.json({
           success: false,
-          error: 'fal.ai returned a response but no image URL was found.',
+          error: 'Euri returned a response but no image was found.',
         });
       }
 
-      console.log(`[Generate Image] Success | url=${imageUrl.slice(0, 80)}...`);
+      console.log(`[Generate Image] Success | provider=euri | model=${EURI_IMAGE_MODEL}`);
 
       return NextResponse.json({
         success: true,
         image_url: imageUrl,
         prompt,
         size,
+        provider: 'euri',
+        model: EURI_IMAGE_MODEL,
       });
     } catch (error) {
       console.error('[Generate Image] Error:', error);
