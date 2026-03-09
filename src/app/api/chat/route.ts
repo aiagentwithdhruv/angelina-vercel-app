@@ -17,6 +17,7 @@ import { resilientCall } from '@/lib/resilient-provider';
 import { buildContextPulse } from '@/lib/context-pulse';
 import { checkBudgetAlert } from '@/lib/proactive-push';
 import { getPreferenceTracker } from '@/lib/preference-tracker';
+import { getAgentForTask } from '@/lib/agent-router';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -526,6 +527,19 @@ export async function POST(request: NextRequest) {
 
     const lastUserMsg = [...messages].reverse().find((m: any) => m.role === 'user');
     const userText = lastUserMsg?.content || '';
+
+    // ── 0.5 Agent Router: prepend specialized agent prompt for domain tasks ──
+    const agentRouting = getAgentForTask(typeof userText === 'string' ? userText : '');
+    if (agentRouting.confidence > 0.4 && agentRouting.agent.name !== 'angelina-prime') {
+      const agentPrefix = `[Agent: ${agentRouting.agent.label}]\n${agentRouting.agent.systemPrompt}\n\n`;
+      const sysIdx = messages.findIndex((m: any) => m.role === 'system');
+      if (sysIdx >= 0) {
+        messages[sysIdx].content = agentPrefix + messages[sysIdx].content;
+      } else {
+        messages.unshift({ role: 'system', content: agentPrefix });
+      }
+      console.log(`[Agent Router] ${agentRouting.agent.label} (confidence: ${agentRouting.confidence}, keywords: ${agentRouting.matchedKeywords.join(', ')})`);
+    }
 
     // ── 1. Model Router: auto-route only when user didn't explicitly choose ──
     let routing = { routed: false, model: activeModel, complexity: '' };

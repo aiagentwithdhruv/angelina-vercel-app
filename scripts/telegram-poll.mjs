@@ -6,6 +6,13 @@
  * Use this for local development. For production, use the webhook endpoint.
  */
 
+import { createWriteStream } from 'fs';
+import { unlink } from 'fs/promises';
+import { tmpdir } from 'os';
+import { join } from 'path';
+import { Readable } from 'stream';
+import { finished } from 'stream/promises';
+
 const token = process.env.TELEGRAM_BOT_TOKEN;
 if (!token) {
   console.error('TELEGRAM_BOT_TOKEN not found in .env.local');
@@ -61,57 +68,217 @@ bot.command('status', async (ctx) => {
   );
 });
 
-// Tools — must match actual /api/tools/* routes
+// Tools — must match actual /api/tools/* routes AND ai-agent.ts definitions
 const TOOLS = [
+  // --- Email tools ---
   {
     name: 'check_email',
     description: 'Check and summarize emails from Gmail inbox',
-    parameters: { count: { type: 'number', description: 'Number of emails to check' }, filter: { type: 'string', description: 'Filter: unread, important, all' } },
+    parameters: {
+      count: { type: 'number', description: 'Number of emails to check', default: 5 },
+      filter: { type: 'string', description: 'Filter: unread, important, all', default: 'unread' },
+    },
   },
   {
     name: 'send_email',
     description: 'Send an email via Gmail',
-    parameters: { to: { type: 'string', description: 'Recipient email' }, subject: { type: 'string', description: 'Email subject' }, body: { type: 'string', description: 'Email body' } },
+    parameters: {
+      to: { type: 'string', description: 'Recipient email', required: true },
+      subject: { type: 'string', description: 'Email subject', required: true },
+      body: { type: 'string', description: 'Email body', required: true },
+    },
   },
+  {
+    name: 'draft_email',
+    description: 'Draft an email reply',
+    parameters: {
+      emailId: { type: 'string', description: 'ID of email to reply to' },
+      tone: { type: 'string', description: 'Tone: professional, friendly, brief' },
+    },
+  },
+
+  // --- Task management ---
+  {
+    name: 'manage_task',
+    description: 'Create, update, bulk-update, or list tasks. Actions: "create", "update", "update_all", "list".',
+    parameters: {
+      action: { type: 'string', description: 'create, update, update_all, or list', required: true },
+      title: { type: 'string', description: 'Task title (for create/update)' },
+      description: { type: 'string', description: 'Task description' },
+      status: { type: 'string', description: 'pending, in_progress, completed, archived' },
+      priority: { type: 'string', description: 'high, medium, low' },
+      from_status: { type: 'string', description: 'For update_all: move tasks FROM this status' },
+    },
+  },
+
+  // --- Autonomous goals ---
+  {
+    name: 'goals',
+    description: 'Set, update, or list autonomous goals. When a goal is created, Angelina auto-decomposes it into tasks and executes them every 15 minutes. Use for goals, targets, OKRs. Actions: "set" (new goal), "update" (progress/status), "list" (show all), "queue" (show task queue).',
+    parameters: {
+      action: { type: 'string', description: 'set, update, list, or queue', required: true },
+      title: { type: 'string', description: 'Goal title' },
+      description: { type: 'string', description: 'Goal details' },
+      target: { type: 'string', description: 'Target metric' },
+      deadline: { type: 'string', description: 'Deadline (ISO date)' },
+      progress: { type: 'number', description: 'Progress 0-100 (for update)' },
+      status: { type: 'string', description: 'active, completed, paused, failed (for update)' },
+      goal_id: { type: 'string', description: 'Goal ID (for update)' },
+      priority: { type: 'string', description: 'critical, high, medium, low' },
+    },
+  },
+
+  // --- Calendar tools ---
   {
     name: 'check_calendar',
     description: 'Check upcoming calendar events from Google Calendar',
-    parameters: { days: { type: 'number', description: 'Days to look ahead (default 7)' } },
+    parameters: {
+      days: { type: 'number', description: 'Days to look ahead', default: 7 },
+    },
   },
+  {
+    name: 'create_event',
+    description: 'Create a calendar event',
+    parameters: {
+      title: { type: 'string', description: 'Event title', required: true },
+      date: { type: 'string', description: 'Event date', required: true },
+      time: { type: 'string', description: 'Event time' },
+      duration: { type: 'number', description: 'Duration in minutes', default: 60 },
+    },
+  },
+
+  // --- Document generation ---
+  {
+    name: 'generate_document',
+    description: 'Generate a document (PDF, DOCX)',
+    parameters: {
+      type: { type: 'string', description: 'quotation, invoice, report, letter' },
+      data: { type: 'object', description: 'Document data' },
+      format: { type: 'string', description: 'pdf, docx', default: 'pdf' },
+    },
+  },
+
+  // --- Web search ---
   {
     name: 'web_search',
     description: 'Search the web in real-time for current events, latest news, prices, weather, live scores, stock prices, or any question needing up-to-date information.',
-    parameters: { query: { type: 'string', description: 'Search query' }, search_depth: { type: 'string', description: 'basic or advanced' }, max_results: { type: 'number', description: 'Max results (default 5)' } },
+    parameters: {
+      query: { type: 'string', description: 'Search query', required: true },
+      search_depth: { type: 'string', description: 'basic or advanced' },
+      max_results: { type: 'number', description: 'Max results (default 5)' },
+    },
   },
-  {
-    name: 'wikipedia',
-    description: 'Search Wikipedia for detailed information about a topic, person, place, concept, or historical event.',
-    parameters: { query: { type: 'string', description: 'Topic to search' }, sentences: { type: 'number', description: 'Sentences in summary (default 4)' } },
-  },
-  {
-    name: 'hacker_news',
-    description: 'Get top/trending stories from Hacker News. Use for tech news, startup news, or tech discussions.',
-    parameters: { type: { type: 'string', description: 'top, new, best, ask, show' }, count: { type: 'number', description: 'Number of stories (default 5)' } },
-  },
+
+  // --- Memory tools ---
   {
     name: 'save_memory',
     description: 'Save important information to persistent memory. Use when Dhruv tells you about a client, preference, decision, or important detail.',
-    parameters: { topic: { type: 'string', description: 'Short topic/name' }, content: { type: 'string', description: 'Detailed info to remember' }, type: { type: 'string', description: 'client, fact, preference, decision, or task' }, importance: { type: 'string', description: 'low, medium, or high' } },
+    parameters: {
+      content: { type: 'string', description: 'What to remember', required: true },
+      topic: { type: 'string', description: 'Short topic/name' },
+      type: { type: 'string', description: 'client, fact, preference, decision, or task' },
+      importance: { type: 'string', description: 'low, medium, or high' },
+    },
   },
   {
     name: 'recall_memory',
     description: 'Search your memory for previously saved information.',
-    parameters: { query: { type: 'string', description: 'Search query' }, type: { type: 'string', description: 'Optional filter: client, fact, preference, decision, task' } },
+    parameters: {
+      query: { type: 'string', description: 'Search query', required: true },
+      type: { type: 'string', description: 'Optional filter: client, fact, preference, decision, task' },
+    },
   },
-  {
-    name: 'manage_task',
-    description: 'Create, update, or list tasks. Use when Dhruv mentions tasks, to-dos, or work items.',
-    parameters: { action: { type: 'string', description: 'create, update, or list' }, title: { type: 'string', description: 'Task title' }, description: { type: 'string', description: 'Task details' }, priority: { type: 'string', description: 'low, medium, or high' }, status: { type: 'string', description: 'pending, in_progress, completed, or archived' } },
-  },
+
+  // --- Call ---
   {
     name: 'call_dhruv',
-    description: 'Call Dhruv on his phone. Default mode is "remind" (one-way TTS call).',
-    parameters: { message: { type: 'string', description: 'Message to speak on the call' }, call_type: { type: 'string', description: 'reminder, motivation, task_update, alert, or general' }, mode: { type: 'string', description: 'remind (default) or talk (2-way AI)' } },
+    description: 'Call Dhruv on his phone. Use when he says "call me", "remind me by call", "phone me".',
+    parameters: {
+      message: { type: 'string', description: 'What to say on the call', required: true },
+      call_type: { type: 'string', description: 'reminder, motivation, task_update, alert, or general' },
+      mode: { type: 'string', description: 'vapi (AI conversation) or twilio (quick reminder)', default: 'twilio' },
+    },
+  },
+
+  // --- YouTube ---
+  {
+    name: 'youtube_analytics',
+    description: 'Get YouTube channel analytics and video performance data.',
+    parameters: {},
+  },
+
+  // --- VPS Control ---
+  {
+    name: 'vps_execute',
+    description: 'Execute commands on Dhruv\'s VPS via OpenClaw. Can run shell commands, manage Docker, check server health, or delegate to specialized agents.',
+    parameters: {
+      command: { type: 'string', description: 'The command or instruction to execute on the VPS', required: true },
+      agent: { type: 'string', description: 'Which OpenClaw agent to use: arjun, scout, creator, devops. Default: arjun' },
+    },
+  },
+
+  // --- Image Generation (Euri) ---
+  {
+    name: 'generate_image',
+    description: 'Generate AI images using FLUX model. Returns image URL. Use for thumbnails, social media graphics, diagrams.',
+    parameters: {
+      prompt: { type: 'string', description: 'Detailed image generation prompt', required: true },
+      image_size: { type: 'string', description: 'landscape_16_9, square, or portrait_4_3. Default: landscape_16_9' },
+    },
+  },
+
+  // --- LinkedIn Posting ---
+  {
+    name: 'linkedin_post',
+    description: 'Post content on LinkedIn via Ghost Browser on VPS. Requires approval unless auto-post is enabled.',
+    parameters: {
+      content: { type: 'string', description: 'The LinkedIn post content', required: true },
+      image_url: { type: 'string', description: 'URL of image to attach' },
+    },
+  },
+
+  // --- Presentations (Gamma) ---
+  {
+    name: 'create_presentation',
+    description: 'Create professional presentations and slides using Gamma AI.',
+    parameters: {
+      topic: { type: 'string', description: 'Topic or title for the presentation', required: true },
+      style: { type: 'string', description: 'professional, creative, minimal' },
+      num_slides: { type: 'number', description: 'Number of slides, default 8' },
+    },
+  },
+
+  // --- Speech-to-Text (Euri — Sarvam STT) ---
+  {
+    name: 'transcribe_audio',
+    description: 'Transcribe audio/voice messages to text. Supports Hindi and English. Use for Telegram voice messages, meeting recordings, or any audio file.',
+    parameters: {
+      file: { type: 'string', description: 'Audio file path (wav, mp3, flac, ogg, m4a). Max 25MB.', required: true },
+      language_code: { type: 'string', description: 'BCP-47 language code: en-IN, hi-IN. Default: en-IN' },
+      with_timestamps: { type: 'boolean', description: 'Include word-level timestamps. Default: false' },
+    },
+  },
+
+  // --- Text-to-Speech (Euri — Sarvam TTS) ---
+  {
+    name: 'text_to_speech',
+    description: 'Convert text to natural speech audio. Supports Hindi and English voices. Use when Dhruv asks to "say this", "read this aloud", or for voice notifications.',
+    parameters: {
+      input: { type: 'string', description: 'Text to convert to speech', required: true },
+      speaker: { type: 'string', description: 'Voice ID. Default: shubh' },
+      language: { type: 'string', description: 'Target language: en-IN, hi-IN. Default: en-IN' },
+      pace: { type: 'number', description: 'Speech pace (0.5-2.0). Default: 1' },
+    },
+  },
+
+  // --- Embeddings (Euri) ---
+  {
+    name: 'generate_embeddings',
+    description: 'Generate vector embeddings for text. Use for semantic search, RAG, memory similarity.',
+    parameters: {
+      input: { type: 'string', description: 'Text or array of texts to embed', required: true },
+      model: { type: 'string', description: 'Embedding model. Default: text-embedding-3-small' },
+    },
   },
 ];
 
@@ -239,11 +406,32 @@ function splitMessage(text) {
   return chunks;
 }
 
-// Text messages
-bot.on('message:text', async (ctx) => {
-  const text = ctx.message.text;
-  if (text.startsWith('/')) return;
+/**
+ * Download a Telegram voice file to a temp path, returns the local file path
+ */
+async function downloadTelegramFile(fileId) {
+  // Get file info from Telegram
+  const file = await bot.api.getFile(fileId);
+  const filePath = file.file_path;
+  const url = `https://api.telegram.org/file/bot${token}/${filePath}`;
 
+  // Determine extension from file_path (e.g. voice/file_123.oga)
+  const ext = filePath.split('.').pop() || 'ogg';
+  const tmpPath = join(tmpdir(), `tg_voice_${fileId}.${ext}`);
+
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`Failed to download file: ${res.statusText}`);
+
+  const ws = createWriteStream(tmpPath);
+  await finished(Readable.fromWeb(res.body).pipe(ws));
+
+  return tmpPath;
+}
+
+/**
+ * Process a text message through the chat pipeline (shared by text and voice handlers)
+ */
+async function processTextMessage(ctx, text) {
   const userId = ctx.from?.id;
   const session = getSession(userId);
   session.push({ role: 'user', content: text });
@@ -285,6 +473,65 @@ bot.on('message:text', async (ctx) => {
     console.error('[Telegram] Error:', err.message);
     await ctx.reply('Something went wrong. Make sure the dev server is running on ' + BASE_URL);
   }
+}
+
+// Text messages
+bot.on('message:text', async (ctx) => {
+  const text = ctx.message.text;
+  if (text.startsWith('/')) return;
+  await processTextMessage(ctx, text);
+});
+
+// Voice messages — download, transcribe via STT, then process as text
+bot.on('message:voice', async (ctx) => {
+  const voice = ctx.message.voice;
+  const userId = ctx.from?.id;
+
+  console.log(`[Telegram] Voice message from ${userId} (${voice.duration}s, ${voice.file_size} bytes)`);
+
+  await ctx.replyWithChatAction('typing');
+
+  let tmpPath = null;
+  try {
+    // 1. Download the voice file from Telegram
+    tmpPath = await downloadTelegramFile(voice.file_id);
+    console.log(`[Telegram] Voice downloaded to ${tmpPath}`);
+
+    // 2. Send to transcribe_audio API for STT
+    const transcribeResult = await executeTool('transcribe_audio', {
+      file: tmpPath,
+      language_code: 'en-IN',
+    });
+
+    if (transcribeResult.error) {
+      await ctx.reply(`Could not transcribe voice message: ${transcribeResult.error}`);
+      return;
+    }
+
+    const transcript = transcribeResult.transcript || transcribeResult.text || transcribeResult.result || '';
+    if (!transcript) {
+      await ctx.reply('I received your voice message but couldn\'t extract any text from it.');
+      return;
+    }
+
+    console.log(`[Telegram] Transcribed: "${transcript.slice(0, 100)}${transcript.length > 100 ? '...' : ''}"`);
+
+    // 3. Show the user what was heard
+    await ctx.reply(`🎤 _"${transcript}"_`, { parse_mode: 'Markdown' }).catch(() =>
+      ctx.reply(`Heard: "${transcript}"`)
+    );
+
+    // 4. Process the transcribed text as a normal chat message
+    await processTextMessage(ctx, transcript);
+  } catch (err) {
+    console.error('[Telegram] Voice error:', err.message);
+    await ctx.reply('Failed to process voice message. Make sure the dev server is running on ' + BASE_URL);
+  } finally {
+    // Clean up temp file
+    if (tmpPath) {
+      unlink(tmpPath).catch(() => {});
+    }
+  }
 });
 
 bot.catch((err) => console.error('[Bot Error]', err));
@@ -295,7 +542,8 @@ await bot.api.deleteWebhook();
 console.log(`\n🤖 Angelina Telegram Bot started (polling mode)`);
 console.log(`   Bot: @Aiangelina_bot`);
 console.log(`   Server: ${BASE_URL}`);
+console.log(`   Tools: ${TOOLS.length} registered`);
 console.log(`   Auth: ${allowedUsers.size > 0 ? `${allowedUsers.size} allowed users` : 'open (dev mode)'}`);
-console.log(`\n   Send a message to @Aiangelina_bot on Telegram!\n`);
+console.log(`\n   Send a message or voice note to @Aiangelina_bot on Telegram!\n`);
 
 bot.start();
