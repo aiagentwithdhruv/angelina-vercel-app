@@ -26,8 +26,8 @@ export const metadata: Metadata = {
   description: 'Your intelligent assistant for personal and business automation',
   manifest: '/manifest.json',
   icons: {
-    icon: '/icons/icon-192.svg',
-    apple: '/icons/icon-192.svg',
+    icon: '/icons/icon-192.png',
+    apple: '/apple-touch-icon.png',
   },
   appleWebApp: {
     capable: true,
