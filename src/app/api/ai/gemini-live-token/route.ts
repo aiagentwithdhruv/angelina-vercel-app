@@ -9,7 +9,8 @@ import { NextResponse } from "next/server";
 import { ANGELINA_VOICE_INSTRUCTIONS } from "@/lib/angelina-context";
 
 const GEMINI_LIVE_MODELS = [
-  "gemini-2.0-flash-live-001",
+  "gemini-2.5-flash-native-audio-latest",
+  "gemini-2.5-flash-native-audio-preview-12-2025",
 ];
 
 // Gemini voices: Zephyr (warm female), Aoede (bright), Kore (firm), Puck (upbeat), Charon (deep)
