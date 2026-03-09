@@ -36,7 +36,9 @@ function cleanup() {
   lastCleanup = now;
 
   const timeout = getTimeoutMs();
-  for (const [key, state] of activations.entries()) {
+  const keys = Array.from(activations.keys());
+  for (const key of keys) {
+    const state = activations.get(key)!;
     if (now - state.lastActivity > timeout) {
       activations.delete(key);
     }
