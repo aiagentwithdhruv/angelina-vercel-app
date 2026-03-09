@@ -1182,24 +1182,27 @@ img[class*="rounded-full"]:hover {
     border-color: rgba(0, 200, 232, 0.3);
   }
 
-  /* Smaller markdown content on mobile */
+  /* Compact markdown on mobile */
   .markdown-content {
-    font-size: 0.9375rem;
-    line-height: 1.6;
+    font-size: 0.8125rem;
+    line-height: 1.5;
   }
 
-  .markdown-content h1 { font-size: 1.2em; }
-  .markdown-content h2 { font-size: 1.1em; }
-  .markdown-content h3 { font-size: 1em; }
+  .markdown-content h1 { font-size: 1.1em; margin: 0.8em 0 0.4em; }
+  .markdown-content h2 { font-size: 1.05em; margin: 0.6em 0 0.3em; }
+  .markdown-content h3 { font-size: 1em; margin: 0.5em 0 0.25em; }
+
+  .markdown-content p { margin: 0.3em 0; }
+  .markdown-content ul, .markdown-content ol { margin: 0.3em 0; padding-left: 1.2em; }
+  .markdown-content li { margin: 0.15em 0; }
 
   .markdown-content pre {
-    font-size: 0.8em;
-    padding: 0.6em 0.8em;
+    font-size: 0.75em;
+    padding: 0.5em 0.6em;
   }
 
-  .markdown-content table {
-    font-size: 0.8em;
-  }
+  .markdown-content table { font-size: 0.75em; }
+  .markdown-content th, .markdown-content td { padding: 0.35em 0.5em; }
 
   /* Disable hover transforms on new elements */
   .quick-action-card:hover {

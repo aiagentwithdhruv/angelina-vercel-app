@@ -42,10 +42,10 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message }) => {
       />
 
       {/* Bubble */}
-      <div className={clsx('flex flex-col max-w-[70%]', isUser && 'items-end')}>
+      <div className={clsx('flex flex-col max-w-[85%] sm:max-w-[70%]', isUser && 'items-end')}>
         <div
           className={clsx(
-            'px-4 py-3 text-base leading-relaxed rounded-2xl',
+            'px-3 py-2 text-sm leading-normal sm:px-4 sm:py-3 sm:text-base sm:leading-relaxed rounded-2xl',
             isUser
               ? 'message-user rounded-tr-sm'
               : clsx(
