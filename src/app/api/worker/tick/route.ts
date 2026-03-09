@@ -274,6 +274,7 @@ export async function GET(request: NextRequest) {
       hasGroq: Boolean(process.env.GROQ_API_KEY),
       hasAnthropic: Boolean(process.env.ANTHROPIC_API_KEY),
       hasOpenRouter: Boolean(process.env.OPENROUTER_API_KEY),
+      hasEuri: Boolean(process.env.EURI_API_KEY),
       chatEndpoint: `${baseUrl}/api/chat`,
     });
   }
