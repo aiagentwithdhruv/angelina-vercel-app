@@ -102,10 +102,10 @@ const TASK_ROUTING: Record<TaskType, ModelChoice[]> = {
     { model: 'or:deepseek/deepseek-v3.2', envKey: 'OPENROUTER_API_KEY' },
   ],
   research: [
-    { model: 'sonar-pro', envKey: 'PERPLEXITY_API_KEY' },         // Built-in web search
-    { model: 'sonar', envKey: 'PERPLEXITY_API_KEY' },              // Lighter search
+    { model: 'sonar', envKey: 'PERPLEXITY_API_KEY' },             // Web search, $1/$1 per 1M
     { model: 'or:google/gemini-3-flash-preview', envKey: 'OPENROUTER_API_KEY' },
     { model: 'gemini-2.5-flash', envKey: 'GEMINI_API_KEY' },
+    { model: 'gpt-4.1-mini', envKey: 'OPENAI_API_KEY' },
   ],
   content: [
     { model: 'claude-sonnet-4-5-20250929', envKey: 'ANTHROPIC_API_KEY' }, // Best at writing
