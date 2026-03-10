@@ -296,8 +296,23 @@ export function useGeminiLiveVoice(options: UseGeminiLiveVoiceOptions = {}): Use
     console.log("[GeminiLive] Config:", config.model, config.voice);
 
     return new Promise<void>((resolve, reject) => {
+      let settled = false;
+      const settle = (fn: () => void) => { if (!settled) { settled = true; fn(); } };
+
       const wsUrl = `${GEMINI_WS_URL}?key=${config.apiKey}`;
       const ws = new WebSocket(wsUrl);
+
+      // Timeout — if setupComplete never arrives, don't hang forever
+      const timeout = setTimeout(() => {
+        settle(() => {
+          const msg = "Gemini Live setup timed out (10s). API may be rate-limited.";
+          console.error("[GeminiLive]", msg);
+          setError(msg);
+          onError?.(msg);
+          ws.close();
+          reject(new Error(msg));
+        });
+      }, 10000);
 
       ws.onopen = () => {
         console.log("[GeminiLive] WebSocket connected, sending setup");
@@ -322,6 +337,8 @@ export function useGeminiLiveVoice(options: UseGeminiLiveVoiceOptions = {}): Use
                   },
                 },
               },
+              // Enable transcription of user speech
+              inputAudioTranscription: {},
             },
             systemInstruction: {
               parts: [{ text: config.instructions }],
@@ -333,6 +350,7 @@ export function useGeminiLiveVoice(options: UseGeminiLiveVoiceOptions = {}): Use
           setup.setup.tools = [{ functionDeclarations }];
         }
 
+        console.log("[GeminiLive] Setup message:", JSON.stringify(setup).slice(0, 500));
         ws.send(JSON.stringify(setup));
         setupSentRef.current = true;
         wsRef.current = ws;
@@ -342,33 +360,45 @@ export function useGeminiLiveVoice(options: UseGeminiLiveVoiceOptions = {}): Use
       ws.onmessage = (event: MessageEvent) => {
         try {
           const data = JSON.parse(event.data);
+          console.log("[GeminiLive] Pre-setup event:", JSON.stringify(data).slice(0, 300));
           if (data.setupComplete) {
+            clearTimeout(timeout);
             console.log("[GeminiLive] Setup complete — ready for audio");
             setIsConnected(true);
             // Now switch to the main handler for all future messages
             ws.onmessage = handleMessage;
-            resolve();
+            settle(() => resolve());
             return;
           }
-        } catch {}
+        } catch (err) {
+          console.error("[GeminiLive] Pre-setup parse error:", err);
+        }
         // Forward any non-setup messages to main handler
         handleMessage(event);
       };
 
-      ws.onerror = () => {
-        const msg = "Gemini Live connection error";
-        setError(msg);
-        onError?.(msg);
-        reject(new Error(msg));
+      ws.onerror = (evt) => {
+        clearTimeout(timeout);
+        console.error("[GeminiLive] WebSocket error:", evt);
+        settle(() => {
+          const msg = "Gemini Live connection error";
+          setError(msg);
+          onError?.(msg);
+          reject(new Error(msg));
+        });
       };
 
       ws.onclose = (event) => {
+        clearTimeout(timeout);
         console.log("[GeminiLive] Disconnected:", event.code, event.reason);
         setIsConnected(false);
         setIsListening(false);
-        if (event.code !== 1000 && event.code !== 1005) {
-          setError(`Gemini Live closed: ${event.reason || "Unknown"}`);
-        }
+        settle(() => {
+          const msg = `Gemini Live closed before setup: ${event.reason || `code ${event.code}`}`;
+          setError(msg);
+          onError?.(msg);
+          reject(new Error(msg));
+        });
       };
 
       wsRef.current = ws;

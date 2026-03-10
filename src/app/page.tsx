@@ -152,10 +152,15 @@ function CommandCenterInner() {
 
   // Handle voice button click
   const handleVoiceStart = async () => {
-    if (!isConnected) {
-      await connect();
+    try {
+      if (!isConnected) {
+        await connect();
+      }
+      startListening();
+    } catch (err) {
+      console.error('[Voice] Failed to start:', err);
+      // Error is already set in the hook — don't crash the UI
     }
-    startListening();
   };
 
   const handleVoiceStop = () => {

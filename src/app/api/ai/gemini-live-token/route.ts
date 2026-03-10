@@ -17,7 +17,8 @@ const GEMINI_LIVE_MODELS = [
 const GEMINI_VOICES = ["Zephyr", "Aoede", "Kore", "Puck", "Charon", "Fenrir", "Leda", "Orus", "Perseus"];
 
 export async function POST(request: Request) {
-  const apiKey = process.env.GEMINI_API_KEY;
+  // Strip quotes in case env var was set with them
+  const apiKey = process.env.GEMINI_API_KEY?.replace(/^["']|["']$/g, "");
 
   if (!apiKey) {
     return NextResponse.json(
