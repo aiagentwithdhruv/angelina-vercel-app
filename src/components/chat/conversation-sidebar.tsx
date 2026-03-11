@@ -58,14 +58,15 @@ export const ConversationSidebar: React.FC<ConversationSidebarProps> = ({
       {/* Sidebar */}
       <div
         className={clsx(
-          'fixed top-0 left-0 h-full z-50 flex flex-col',
+          'fixed left-0 z-50 flex flex-col',
+          'top-0 h-full md:top-16 md:h-[calc(100vh-4rem)]',
           'w-72 bg-charcoal border-r border-steel-dark/60',
           'transition-transform duration-200',
           isOpen ? 'translate-x-0' : '-translate-x-full',
         )}
       >
         {/* Header */}
-        <div className="h-16 px-4 flex items-center justify-between border-b border-steel-dark/60">
+        <div className="h-14 px-4 flex items-center justify-between border-b border-steel-dark/60">
           <span className="text-sm font-semibold text-text-primary font-orbitron tracking-wider">
             Chats
           </span>

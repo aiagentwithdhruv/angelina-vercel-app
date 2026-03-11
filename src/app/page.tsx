@@ -106,7 +106,7 @@ function CommandCenterInner() {
       .catch(() => {});
   }, []);
 
-  // Load conversations on mount
+  // Load conversations on mount + auto-load last active conversation
   useEffect(() => {
     if (conversationsLoadedRef.current) return;
     conversationsLoadedRef.current = true;
@@ -116,6 +116,32 @@ function CommandCenterInner() {
       .then(data => {
         if (data.conversations) {
           setConversations(data.conversations);
+          // Auto-load last active conversation from localStorage, or most recent
+          const lastId = typeof window !== 'undefined' ? localStorage.getItem('angelina_active_conv') : null;
+          const target = lastId && data.conversations.find((c: any) => c.id === lastId)
+            ? lastId
+            : data.conversations[0]?.id;
+          if (target) {
+            // Inline load to avoid stale closure
+            setActiveConversationId(target);
+            setShowHero(false);
+            fetch(`/api/conversations?id=${target}`)
+              .then(r => r.json())
+              .then(d => {
+                if (d.messages && d.messages.length > 0) {
+                  setMessages(d.messages.map((m: any) => ({
+                    id: m.id,
+                    role: m.role,
+                    content: m.content,
+                    timestamp: new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                    model: m.model || undefined,
+                    toolUsed: m.tool_used || undefined,
+                  })));
+                  isFirstMessageRef.current = false;
+                }
+              })
+              .catch(() => {});
+          }
         }
       })
       .catch(() => {});
@@ -124,6 +150,7 @@ function CommandCenterInner() {
   // Load a conversation's messages
   const loadConversation = useCallback(async (convId: string) => {
     setActiveConversationId(convId);
+    if (typeof window !== 'undefined') localStorage.setItem('angelina_active_conv', convId);
     setSidebarOpen(false);
     setShowHero(false);
 
@@ -153,6 +180,7 @@ function CommandCenterInner() {
   // Start a new chat
   const startNewChat = useCallback(() => {
     setActiveConversationId(null);
+    if (typeof window !== 'undefined') localStorage.removeItem('angelina_active_conv');
     setMessages([]);
     setShowHero(true);
     isFirstMessageRef.current = true;
@@ -183,6 +211,14 @@ function CommandCenterInner() {
     } catch {}
   }, []);
 
+  // Mask sensitive content (activation codes, passwords) before persisting
+  const maskSensitive = (text: string): string => {
+    // Mask activation codes (4-8 digit codes that look like passwords)
+    return text.replace(/\b(code|password|activation|pin|secret)[\s:]*(\S+)/gi, (match, label, value) => {
+      return `${label}: ${'•'.repeat(value.length)}`;
+    }).replace(/^\d{4,8}$/gm, (match) => '•'.repeat(match.length));
+  };
+
   // Save a message to the active conversation (creates conversation if needed)
   const persistMessage = useCallback(async (
     role: 'user' | 'assistant',
@@ -190,6 +226,8 @@ function CommandCenterInner() {
     model?: string,
     toolUsed?: string,
   ) => {
+    // Mask sensitive content before saving
+    content = maskSensitive(content);
     let convId = activeConversationId;
 
     // Create conversation on first message
