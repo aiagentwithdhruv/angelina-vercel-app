@@ -106,6 +106,15 @@ function CommandCenterInner() {
       .catch(() => {});
   }, []);
 
+  // Mask sensitive content (activation codes, passwords) before persisting/displaying
+  const maskSensitive = useCallback((text: string): string => {
+    if (!text) return text;
+    if (/^\d{4,8}$/.test(text.trim())) return '•'.repeat(text.trim().length);
+    return text.replace(/\b(code|password|activation|pin|secret)[\s:]+(\S+)/gi, (_match, label, value) => {
+      return `${label}: ${'•'.repeat(value.length)}`;
+    });
+  }, []);
+
   // Load conversations on mount + auto-load last active conversation
   useEffect(() => {
     if (conversationsLoadedRef.current) return;
@@ -132,7 +141,7 @@ function CommandCenterInner() {
                   setMessages(d.messages.map((m: any) => ({
                     id: m.id,
                     role: m.role,
-                    content: m.content,
+                    content: m.role === 'user' ? maskSensitive(m.content) : m.content,
                     timestamp: new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
                     model: m.model || undefined,
                     toolUsed: m.tool_used || undefined,
@@ -161,7 +170,7 @@ function CommandCenterInner() {
         const loaded: Message[] = data.messages.map((m: any) => ({
           id: m.id,
           role: m.role,
-          content: m.content,
+          content: m.role === 'user' ? maskSensitive(m.content) : m.content,
           timestamp: new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
           model: m.model || undefined,
           toolUsed: m.tool_used || undefined,
@@ -175,7 +184,7 @@ function CommandCenterInner() {
     } catch {
       setMessages([]);
     }
-  }, []);
+  }, [maskSensitive]);
 
   // Start a new chat
   const startNewChat = useCallback(() => {
@@ -210,14 +219,6 @@ function CommandCenterInner() {
       if (data.conversations) setConversations(data.conversations);
     } catch {}
   }, []);
-
-  // Mask sensitive content (activation codes, passwords) before persisting
-  const maskSensitive = (text: string): string => {
-    // Mask activation codes (4-8 digit codes that look like passwords)
-    return text.replace(/\b(code|password|activation|pin|secret)[\s:]*(\S+)/gi, (match, label, value) => {
-      return `${label}: ${'•'.repeat(value.length)}`;
-    }).replace(/^\d{4,8}$/gm, (match) => '•'.repeat(match.length));
-  };
 
   // Save a message to the active conversation (creates conversation if needed)
   const persistMessage = useCallback(async (

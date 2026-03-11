@@ -126,7 +126,7 @@ export const ConversationSidebar: React.FC<ConversationSidebarProps> = ({
                       </p>
                       {conv.preview && (
                         <p className="text-[11px] text-text-muted truncate mt-0.5">
-                          {conv.preview}
+                          {/^\d{4,8}$/.test(conv.preview.trim()) ? '••••' : conv.preview}
                         </p>
                       )}
                     </div>
