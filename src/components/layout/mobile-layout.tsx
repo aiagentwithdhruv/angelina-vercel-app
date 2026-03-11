@@ -10,6 +10,7 @@ interface MobileLayoutProps {
   title?: string;
   hideHeader?: boolean;
   hideNav?: boolean;
+  onChatHistory?: () => void;
 }
 
 export const MobileLayout: React.FC<MobileLayoutProps> = ({
@@ -17,6 +18,7 @@ export const MobileLayout: React.FC<MobileLayoutProps> = ({
   title,
   hideHeader = false,
   hideNav = false,
+  onChatHistory,
 }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -26,6 +28,7 @@ export const MobileLayout: React.FC<MobileLayoutProps> = ({
       {!hideHeader && (
         <MobileHeader
           onMenuToggle={() => setSidebarOpen(true)}
+          onChatHistory={onChatHistory}
           title={title}
         />
       )}

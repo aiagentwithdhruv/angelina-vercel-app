@@ -795,14 +795,7 @@ function CommandCenterInner() {
 
       {/* Mobile Layout (header + sidebar + bottom nav) */}
       <div className="md:hidden flex flex-col h-[100dvh]">
-        <MobileLayout hideNav>
-          {/* Mobile sidebar toggle */}
-          <button
-            onClick={() => setSidebarOpen(true)}
-            className="fixed top-4 left-4 z-30 p-2 rounded-lg bg-gunmetal/90 border border-steel-dark/60"
-          >
-            <PanelLeftOpen size={16} className="text-text-muted" />
-          </button>
+        <MobileLayout hideNav onChatHistory={() => setSidebarOpen(true)}>
           {/* Scrollable Messages Area */}
           <div className="flex-1 overflow-y-auto pt-[72px] pb-[160px] px-3 space-y-3 chat-area-bg">
             {/* Mobile Welcome Hero */}
