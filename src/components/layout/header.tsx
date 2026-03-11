@@ -4,7 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { clsx } from 'clsx';
-import { Bell, Activity, ListTodo, LayoutDashboard, Users, Settings } from 'lucide-react';
+import { Bell, Activity, ListTodo, LayoutDashboard, Users, Settings, PanelLeftOpen } from 'lucide-react';
 
 const navItems = [
   { href: '/', label: 'Chat', icon: Activity },
@@ -16,16 +16,28 @@ const navItems = [
 
 interface HeaderProps {
   isActive?: boolean;
+  onToggleSidebar?: () => void;
+  sidebarOpen?: boolean;
 }
 
-export const Header: React.FC<HeaderProps> = ({ isActive }) => {
+export const Header: React.FC<HeaderProps> = ({ isActive, onToggleSidebar, sidebarOpen }) => {
   const pathname = usePathname();
 
   return (
     <header className="fixed top-0 left-0 right-0 h-16 bg-charcoal/95 backdrop-blur-sm border-b border-steel-dark/60 z-50 flex items-center">
       <div className="w-full px-6 flex items-center justify-between">
         {/* Logo & Navigation */}
-        <div className="flex items-center space-x-10">
+        <div className="flex items-center space-x-6">
+          {/* Sidebar toggle */}
+          {onToggleSidebar && !sidebarOpen && (
+            <button
+              onClick={onToggleSidebar}
+              className="p-2 -ml-2 rounded-lg hover:bg-gunmetal border border-transparent hover:border-steel-dark/60 transition-all"
+              title="Chat history"
+            >
+              <PanelLeftOpen size={18} className="text-text-muted hover:text-cyan-glow" />
+            </button>
+          )}
           {/* Logo — glows when Angelina is active */}
           <Link href="/" className="flex items-center gap-3">
             <div className={clsx(

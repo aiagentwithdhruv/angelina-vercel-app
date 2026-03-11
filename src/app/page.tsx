@@ -790,7 +790,7 @@ function CommandCenterInner() {
 
       {/* Desktop Header */}
       <div className="hidden md:block">
-        <Header isActive={isAngelinaActive} />
+        <Header isActive={isAngelinaActive} onToggleSidebar={() => setSidebarOpen(true)} sidebarOpen={sidebarOpen} />
       </div>
 
       {/* Mobile Layout (header + sidebar + bottom nav) */}
@@ -954,17 +954,7 @@ function CommandCenterInner() {
       {/* Desktop Layout */}
       <div className="hidden md:flex pt-16 h-screen">
         {/* Chat Area */}
-        <div className={clsx('flex-1 flex flex-col transition-all duration-200', sidebarOpen && 'ml-72')}>
-          {/* Sidebar toggle */}
-          {!sidebarOpen && (
-            <button
-              onClick={() => setSidebarOpen(true)}
-              className="absolute top-20 left-4 z-30 p-2 rounded-lg bg-gunmetal/80 border border-steel-dark/60 hover:border-cyan-glow/50 transition-all"
-              title="Chat history"
-            >
-              <PanelLeftOpen size={18} className="text-text-muted hover:text-cyan-glow" />
-            </button>
-          )}
+        <div className={clsx('flex-1 flex flex-col transition-all duration-200 relative', sidebarOpen && 'ml-72')}>
           {/* Messages Container with subtle background */}
           <div className="flex-1 overflow-y-auto px-6 py-6 space-y-4 chat-area-bg">
 
