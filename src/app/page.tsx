@@ -2,7 +2,8 @@
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import { Mail, CheckSquare, Calendar, DollarSign, TrendingUp, Cpu, Mic, Globe, BookOpen, Newspaper, Phone, AlertTriangle } from 'lucide-react';
+import { clsx } from 'clsx';
+import { Mail, CheckSquare, Calendar, DollarSign, TrendingUp, Cpu, Mic, Globe, BookOpen, Newspaper, Phone, AlertTriangle, PanelLeftOpen } from 'lucide-react';
 import { Header } from '@/components/layout/header';
 import { ActivityPanel, Activity } from '@/components/layout/activity-panel';
 import { MobileLayout } from '@/components/layout/mobile-layout';
@@ -16,6 +17,7 @@ import { detectUpgradeNeeded, UpgradeSuggestion } from '@/lib/smart-upgrade';
 import { diagnoseToolFailure } from '@/lib/self-fix';
 import { TEXT_MODELS, VOICE_MODELS, DEFAULT_TEXT_MODEL, DEFAULT_VOICE_MODEL, TextModelId, VoiceModelId, PROVIDER_LABELS } from '@/lib/models';
 import { ModelSelector } from '@/components/ui/model-selector';
+import { ConversationSidebar, ConversationItem } from '@/components/chat/conversation-sidebar';
 
 // Quick action config with icon colors (matching activity panel palette)
 const quickActions = [
@@ -42,6 +44,13 @@ function CommandCenterInner() {
   const [pendingTaskCount, setPendingTaskCount] = useState(0);
   const [upgradePrompt, setUpgradePrompt] = useState<UpgradeSuggestion & { pendingMessage: string } | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Conversation persistence
+  const [conversations, setConversations] = useState<ConversationItem[]>([]);
+  const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const conversationsLoadedRef = useRef(false);
+  const isFirstMessageRef = useRef(true);
 
   // Tool name → human-readable titles
   const TOOL_TITLES: Record<string, string> = {
@@ -96,6 +105,132 @@ function CommandCenterInner() {
       })
       .catch(() => {});
   }, []);
+
+  // Load conversations on mount
+  useEffect(() => {
+    if (conversationsLoadedRef.current) return;
+    conversationsLoadedRef.current = true;
+
+    fetch('/api/conversations')
+      .then(res => res.json())
+      .then(data => {
+        if (data.conversations) {
+          setConversations(data.conversations);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  // Load a conversation's messages
+  const loadConversation = useCallback(async (convId: string) => {
+    setActiveConversationId(convId);
+    setSidebarOpen(false);
+    setShowHero(false);
+
+    try {
+      const res = await fetch(`/api/conversations?id=${convId}`);
+      const data = await res.json();
+      if (data.messages && data.messages.length > 0) {
+        const loaded: Message[] = data.messages.map((m: any) => ({
+          id: m.id,
+          role: m.role,
+          content: m.content,
+          timestamp: new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          model: m.model || undefined,
+          toolUsed: m.tool_used || undefined,
+        }));
+        setMessages(loaded);
+        isFirstMessageRef.current = false;
+      } else {
+        setMessages([]);
+        isFirstMessageRef.current = true;
+      }
+    } catch {
+      setMessages([]);
+    }
+  }, []);
+
+  // Start a new chat
+  const startNewChat = useCallback(() => {
+    setActiveConversationId(null);
+    setMessages([]);
+    setShowHero(true);
+    isFirstMessageRef.current = true;
+    setSidebarOpen(false);
+  }, []);
+
+  // Delete a conversation
+  const deleteConversation = useCallback(async (convId: string) => {
+    try {
+      await fetch('/api/conversations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'delete', conversationId: convId }),
+      });
+      setConversations(prev => prev.filter(c => c.id !== convId));
+      if (activeConversationId === convId) {
+        startNewChat();
+      }
+    } catch {}
+  }, [activeConversationId, startNewChat]);
+
+  // Refresh conversations list
+  const refreshConversations = useCallback(async () => {
+    try {
+      const res = await fetch('/api/conversations');
+      const data = await res.json();
+      if (data.conversations) setConversations(data.conversations);
+    } catch {}
+  }, []);
+
+  // Save a message to the active conversation (creates conversation if needed)
+  const persistMessage = useCallback(async (
+    role: 'user' | 'assistant',
+    content: string,
+    model?: string,
+    toolUsed?: string,
+  ) => {
+    let convId = activeConversationId;
+
+    // Create conversation on first message
+    if (!convId) {
+      try {
+        const res = await fetch('/api/conversations', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'create' }),
+        });
+        const data = await res.json();
+        convId = data.conversation?.id;
+        if (convId) setActiveConversationId(convId);
+      } catch {
+        return;
+      }
+    }
+
+    if (!convId) return;
+
+    try {
+      await fetch('/api/conversations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'save_message',
+          conversationId: convId,
+          role,
+          content,
+          model,
+          toolUsed,
+          isFirstMessage: isFirstMessageRef.current && role === 'user',
+        }),
+      });
+      if (isFirstMessageRef.current && role === 'user') {
+        isFirstMessageRef.current = false;
+      }
+      // Refresh sidebar in background
+      refreshConversations();
+    } catch {}
+  }, [activeConversationId, refreshConversations]);
 
   // Add message helper
   const addMessage = useCallback((role: 'user' | 'assistant', content: string, extras?: Partial<Message>) => {
@@ -452,6 +587,9 @@ function CommandCenterInner() {
     addMessage('user', userMsg);
     setInputValue('');
 
+    // Persist user message
+    persistMessage('user', userMsg);
+
     // Show typing indicator
     addMessage('assistant', '', { isTyping: true });
 
@@ -561,6 +699,11 @@ function CommandCenterInner() {
         return updated;
       });
 
+      // Persist assistant response
+      if (finalText) {
+        persistMessage('assistant', finalText, finalModel, toolLabel);
+      }
+
     } catch (err) {
       addActivity('error', 'Error', 'Failed to process message', 'error');
       setMessages(prev => {
@@ -595,6 +738,17 @@ function CommandCenterInner() {
 
   return (
     <div className="min-h-screen bg-deep-space">
+      {/* Conversation History Sidebar */}
+      <ConversationSidebar
+        conversations={conversations}
+        activeId={activeConversationId}
+        isOpen={sidebarOpen}
+        onSelect={loadConversation}
+        onNewChat={startNewChat}
+        onDelete={deleteConversation}
+        onClose={() => setSidebarOpen(false)}
+      />
+
       {/* Desktop Header */}
       <div className="hidden md:block">
         <Header isActive={isAngelinaActive} />
@@ -603,6 +757,13 @@ function CommandCenterInner() {
       {/* Mobile Layout (header + sidebar + bottom nav) */}
       <div className="md:hidden flex flex-col h-[100dvh]">
         <MobileLayout hideNav>
+          {/* Mobile sidebar toggle */}
+          <button
+            onClick={() => setSidebarOpen(true)}
+            className="fixed top-4 left-4 z-30 p-2 rounded-lg bg-gunmetal/90 border border-steel-dark/60"
+          >
+            <PanelLeftOpen size={16} className="text-text-muted" />
+          </button>
           {/* Scrollable Messages Area */}
           <div className="flex-1 overflow-y-auto pt-[72px] pb-[160px] px-3 space-y-3 chat-area-bg">
             {/* Mobile Welcome Hero */}
@@ -754,7 +915,17 @@ function CommandCenterInner() {
       {/* Desktop Layout */}
       <div className="hidden md:flex pt-16 h-screen">
         {/* Chat Area */}
-        <div className="flex-1 flex flex-col">
+        <div className={clsx('flex-1 flex flex-col transition-all duration-200', sidebarOpen && 'ml-72')}>
+          {/* Sidebar toggle */}
+          {!sidebarOpen && (
+            <button
+              onClick={() => setSidebarOpen(true)}
+              className="absolute top-20 left-4 z-30 p-2 rounded-lg bg-gunmetal/80 border border-steel-dark/60 hover:border-cyan-glow/50 transition-all"
+              title="Chat history"
+            >
+              <PanelLeftOpen size={18} className="text-text-muted hover:text-cyan-glow" />
+            </button>
+          )}
           {/* Messages Container with subtle background */}
           <div className="flex-1 overflow-y-auto px-6 py-6 space-y-4 chat-area-bg">
 
