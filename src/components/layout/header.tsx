@@ -4,12 +4,13 @@ import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { clsx } from 'clsx';
-import { Bell, Activity, ListTodo, LayoutDashboard, Users, Settings, PanelLeftOpen } from 'lucide-react';
+import { Bell, Activity, ListTodo, LayoutDashboard, Users, Settings, PanelLeftOpen, Brain } from 'lucide-react';
 
 const navItems = [
   { href: '/', label: 'Chat', icon: Activity },
   { href: '/tasks', label: 'Tasks', icon: ListTodo },
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/brain', label: 'Brain', icon: Brain },
   { href: '/social', label: 'Social', icon: Users },
   { href: '/settings', label: 'Settings', icon: Settings },
 ];
@@ -77,6 +78,11 @@ export const Header: React.FC<HeaderProps> = ({ isActive, onToggleSidebar, sideb
 
         {/* Right Section */}
         <div className="flex items-center space-x-3">
+          {pathname !== '/login' && (
+            <Link href="/login" className="text-xs font-medium text-cyan-glow hover:text-cyan-400 border border-cyan-glow/40 hover:border-cyan-glow/60 rounded-lg px-3 py-1.5 transition-all">
+              Sign in
+            </Link>
+          )}
           {/* Notifications */}
           <button className="w-9 h-9 bg-gunmetal rounded-lg flex items-center justify-center border border-steel-dark hover:bg-steel-mid hover:border-cyan-glow/30 transition-all relative">
             <Bell className="w-4 h-4 text-text-secondary" />

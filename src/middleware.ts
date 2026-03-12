@@ -1,60 +1,41 @@
 /**
- * Auth Middleware — Protects all routes except login, telegram webhook, and digest cron.
- *
- * Uses Web Crypto API (Edge-compatible, no Node.js crypto import).
+ * Auth Middleware — Protects all routes except login and public APIs.
+ * Supports: Supabase Auth (multi-user) or legacy AUTH_EMAIL/AUTH_PASSWORD (single user).
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { updateSession } from '@/lib/supabase/middleware';
 
-// Routes that don't need auth
 const PUBLIC_PATHS = [
   '/login',
-  '/api/auth',           // All auth routes (login, logout, google oauth)
-  '/api/health',         // Health check — no auth required
+  '/api/auth',
+  '/api/health',
   '/api/telegram',
   '/api/worker/digest',
   '/api/worker/tick',
   '/api/worker/reflect',
 ];
 
-// Internal API key for server-to-server calls (Telegram bot → /api/chat)
+const SKIP_PREFIXES = ['/_next/', '/icons/', '/manifest.json', '/sw.js', '/favicon'];
+
 function hasInternalAuth(request: NextRequest): boolean {
-  const internalKey = request.headers.get('x-internal-key');
-  const secret = process.env.AUTH_PASSWORD;
-  return Boolean(internalKey && secret && internalKey === secret);
+  const key = request.headers.get('x-internal-key');
+  return Boolean(key && process.env.AUTH_PASSWORD && key === process.env.AUTH_PASSWORD);
 }
 
-const SKIP_PREFIXES = [
-  '/_next/',
-  '/icons/',
-  '/manifest.json',
-  '/sw.js',
-  '/favicon',
-];
-
-async function verifyToken(token: string, secret: string): Promise<boolean> {
+async function verifyLegacyToken(token: string, secret: string): Promise<boolean> {
   try {
     const decoded = atob(token);
     const parts = decoded.split(':');
     if (parts.length < 3) return false;
-
     const signature = parts.pop()!;
     const payload = parts.join(':');
-
-    // Use Web Crypto API (Edge-compatible)
     const encoder = new TextEncoder();
     const key = await crypto.subtle.importKey(
-      'raw',
-      encoder.encode(secret),
-      { name: 'HMAC', hash: 'SHA-256' },
-      false,
-      ['sign'],
+      'raw', encoder.encode(secret), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign'],
     );
     const sig = await crypto.subtle.sign('HMAC', key, encoder.encode(payload));
-    const expected = Array.from(new Uint8Array(sig))
-      .map((b) => b.toString(16).padStart(2, '0'))
-      .join('');
-
+    const expected = Array.from(new Uint8Array(sig)).map((b) => b.toString(16).padStart(2, '0')).join('');
     return signature === expected;
   } catch {
     return false;
@@ -63,48 +44,35 @@ async function verifyToken(token: string, secret: string): Promise<boolean> {
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  if (SKIP_PREFIXES.some((p) => pathname.startsWith(p))) return NextResponse.next();
+  if (PUBLIC_PATHS.some((p) => pathname === p || pathname.startsWith(p + '/'))) return NextResponse.next();
+  if (hasInternalAuth(request)) return NextResponse.next();
 
-  // Skip static assets
-  if (SKIP_PREFIXES.some((p) => pathname.startsWith(p))) {
-    return NextResponse.next();
+  const useSupabase = Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL && (process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY));
+
+  if (useSupabase) {
+    const { response, user } = await updateSession(request);
+    if (!user) {
+      if (pathname.startsWith('/api/')) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      const loginUrl = new URL('/login', request.url);
+      loginUrl.searchParams.set('from', pathname);
+      return NextResponse.redirect(loginUrl);
+    }
+    return response;
   }
 
-  // Skip public routes
-  if (PUBLIC_PATHS.some((p) => pathname === p || pathname.startsWith(p + '/'))) {
-    return NextResponse.next();
-  }
-
-  // If auth not configured, allow everything (dev mode)
   const authEmail = process.env.AUTH_EMAIL;
   const authPassword = process.env.AUTH_PASSWORD;
-  if (!authEmail || !authPassword) {
-    return NextResponse.next();
-  }
+  if (!authEmail || !authPassword) return NextResponse.next();
 
-  // Allow internal server-to-server calls (Telegram bot, digest cron)
-  if (hasInternalAuth(request)) {
-    return NextResponse.next();
-  }
-
-  // Check session cookie
   const sessionCookie = request.cookies.get('angelina_session')?.value;
   const secret = process.env.AUTH_SECRET || authPassword;
-
-  if (!sessionCookie || !(await verifyToken(sessionCookie, secret))) {
-    // API routes → 401 JSON
-    if (pathname.startsWith('/api/')) {
-      return NextResponse.json(
-        { error: 'Unauthorized. Please login at /login' },
-        { status: 401 },
-      );
-    }
-
-    // Pages → redirect to login
+  if (!sessionCookie || !(await verifyLegacyToken(sessionCookie, secret))) {
+    if (pathname.startsWith('/api/')) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     const loginUrl = new URL('/login', request.url);
     loginUrl.searchParams.set('from', pathname);
     return NextResponse.redirect(loginUrl);
   }
-
   return NextResponse.next();
 }
 

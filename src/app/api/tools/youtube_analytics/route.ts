@@ -13,7 +13,7 @@ export async function POST() {
 
     if (!data.channel || !data.analytics) {
       return NextResponse.json({
-        result: 'No YouTube data available yet. Ask Dhruv to go to the Social Media dashboard (/social) and click Refresh to fetch his YouTube data first.',
+        result: 'No YouTube data available yet. Go to the Social page (/social) and click Refresh to fetch channel data, or connect YouTube in Settings.',
       });
     }
 

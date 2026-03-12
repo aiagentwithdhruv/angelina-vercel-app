@@ -10,6 +10,7 @@ import { MobileLayout } from '@/components/layout/mobile-layout';
 import { MessageBubble, Message } from '@/components/chat/message-bubble';
 import { ChatInput } from '@/components/ui/input';
 import { VoiceFAB } from '@/components/ui/voice-fab';
+import { RecordForContextButton } from '@/components/ui/record-for-context-button';
 import { useRealtimeVoice } from '@/hooks/useRealtimeVoice';
 import { useGeminiLiveVoice } from '@/hooks/useGeminiLiveVoice';
 import { ANGELINA_SYSTEM_PROMPT } from '@/lib/angelina-context';
@@ -18,6 +19,7 @@ import { diagnoseToolFailure } from '@/lib/self-fix';
 import { TEXT_MODELS, VOICE_MODELS, DEFAULT_TEXT_MODEL, DEFAULT_VOICE_MODEL, TextModelId, VoiceModelId, PROVIDER_LABELS } from '@/lib/models';
 import { ModelSelector } from '@/components/ui/model-selector';
 import { ConversationSidebar, ConversationItem } from '@/components/chat/conversation-sidebar';
+import { ProactiveBanner } from '@/components/ui/proactive-banner';
 
 // Quick action config with icon colors (matching activity panel palette)
 const quickActions = [
@@ -31,6 +33,20 @@ const quickActions = [
   { icon: <DollarSign className="w-4 h-4" />, label: 'Costs', iconBg: 'from-purple-500 to-purple-600', iconColor: 'text-white' },
   { icon: <TrendingUp className="w-4 h-4" />, label: 'Analytics', iconBg: 'from-blue-500 to-blue-600', iconColor: 'text-white' },
 ];
+
+const TOOL_TITLES: Record<string, string> = {
+  check_email: 'Email Checked',
+  send_email: 'Email Sent',
+  check_calendar: 'Calendar Checked',
+  web_search: 'Web Search',
+  wikipedia: 'Wikipedia Search',
+  hacker_news: 'Hacker News',
+  save_memory: 'Memory Saved',
+  recall_memory: 'Memory Recalled',
+  call_dhruv: 'Phone Call',
+  manage_task: 'Task Updated',
+  obsidian_vault: 'Vault Access',
+};
 
 function CommandCenterInner() {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -51,21 +67,6 @@ function CommandCenterInner() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const conversationsLoadedRef = useRef(false);
   const isFirstMessageRef = useRef(true);
-
-  // Tool name → human-readable titles
-  const TOOL_TITLES: Record<string, string> = {
-    check_email: 'Email Checked',
-    send_email: 'Email Sent',
-    check_calendar: 'Calendar Checked',
-    web_search: 'Web Search',
-    wikipedia: 'Wikipedia Search',
-    hacker_news: 'Hacker News',
-    save_memory: 'Memory Saved',
-    recall_memory: 'Memory Recalled',
-    call_dhruv: 'Phone Call',
-    manage_task: 'Task Updated',
-    obsidian_vault: 'Vault Access',
-  };
 
   // Add activity to the feed (newest first, max 50)
   const addActivity = useCallback((type: string, title: string, detail: string, status?: 'success' | 'error') => {
@@ -105,6 +106,41 @@ function CommandCenterInner() {
       })
       .catch(() => {});
   }, []);
+
+  // Morning Brief: auto-show as first message once per day (only if no active conversation)
+  useEffect(() => {
+    if (!mounted) return;
+    const lastBriefDate = typeof window !== 'undefined' ? localStorage.getItem('angelina_last_brief_date') : null;
+    const today = new Date().toISOString().split('T')[0];
+    if (lastBriefDate === today) return;
+    // Only show if user is on the hero/empty state (no active conv loaded)
+    const timer = setTimeout(() => {
+      if (activeConversationId) return;
+      fetch('/api/brief')
+        .then(res => res.ok ? res.json() : null)
+        .then(data => {
+          if (!data || !data.greeting) return;
+          const lines = [data.greeting, ''];
+          for (const s of (data.sections || [])) {
+            lines.push(`**${s.title}**`);
+            lines.push(s.content);
+            if (s.items?.length) s.items.forEach((item: string) => lines.push(`- ${item}`));
+            lines.push('');
+          }
+          const briefText = lines.join('\n').trim();
+          setMessages([{
+            id: 'brief_' + Date.now(),
+            role: 'assistant' as const,
+            content: briefText,
+            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          }]);
+          setShowHero(false);
+          localStorage.setItem('angelina_last_brief_date', today);
+        })
+        .catch(() => {});
+    }, 1500);
+    return () => clearTimeout(timer);
+  }, [mounted, activeConversationId]);
 
   // Mask sensitive content (activation codes, passwords) before persisting/displaying
   const maskSensitive = useCallback((text: string): string => {
@@ -154,7 +190,7 @@ function CommandCenterInner() {
         }
       })
       .catch(() => {});
-  }, []);
+  }, [maskSensitive]);
 
   // Load a conversation's messages
   const loadConversation = useCallback(async (convId: string) => {
@@ -269,7 +305,7 @@ function CommandCenterInner() {
       // Refresh sidebar in background
       refreshConversations();
     } catch {}
-  }, [activeConversationId, refreshConversations]);
+  }, [activeConversationId, refreshConversations, maskSensitive]);
 
   // Add message helper
   const addMessage = useCallback((role: 'user' | 'assistant', content: string, extras?: Partial<Message>) => {
@@ -793,6 +829,11 @@ function CommandCenterInner() {
         <Header isActive={isAngelinaActive} onToggleSidebar={() => setSidebarOpen(true)} sidebarOpen={sidebarOpen} />
       </div>
 
+      {/* Proactive Insights Banner */}
+      <div className="fixed top-16 left-0 right-0 z-40">
+        <ProactiveBanner />
+      </div>
+
       {/* Mobile Layout (header + sidebar + bottom nav) */}
       <div className="md:hidden flex flex-col h-[100dvh]">
         <MobileLayout hideNav onChatHistory={() => setSidebarOpen(true)}>
@@ -920,7 +961,10 @@ function CommandCenterInner() {
                   </svg>
                 </button>
               ) : (
-                <VoiceFAB onStart={handleVoiceStart} onStop={handleVoiceStop} isListening={isListening} isSpeaking={isSpeaking} isConnected={isConnected} isProcessing={false} className="!w-12 !h-12" />
+                <div className="flex items-center gap-2">
+                  <RecordForContextButton compact />
+                  <VoiceFAB onStart={handleVoiceStart} onStop={handleVoiceStop} isListening={isListening} isSpeaking={isSpeaking} isConnected={isConnected} isProcessing={false} className="!w-12 !h-12" />
+                </div>
               )}
             </div>
             <nav className="bg-charcoal border-t border-steel-dark" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
@@ -1168,14 +1212,17 @@ function CommandCenterInner() {
                       </svg>
                     </button>
                   ) : (
-                    <VoiceFAB
-                      onStart={handleVoiceStart}
-                      onStop={handleVoiceStop}
-                      isListening={isListening}
-                      isSpeaking={isSpeaking}
-                      isConnected={isConnected}
-                      isProcessing={false}
-                    />
+                    <div className="flex items-center gap-2">
+                      <RecordForContextButton />
+                      <VoiceFAB
+                        onStart={handleVoiceStart}
+                        onStop={handleVoiceStop}
+                        isListening={isListening}
+                        isSpeaking={isSpeaking}
+                        isConnected={isConnected}
+                        isProcessing={false}
+                      />
+                    </div>
                   )}
                 </div>
               </div>

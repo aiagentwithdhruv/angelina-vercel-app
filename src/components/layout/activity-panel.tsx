@@ -181,7 +181,7 @@ export const ActivityPanel: React.FC<ActivityPanelProps> = ({ className, activit
     fetchStats();
     const interval = setInterval(fetchStats, 60000);
     return () => clearInterval(interval);
-  }, [activities.length]);
+  }, [activities]);
 
   return (
     <aside className={clsx('w-80 bg-charcoal border-l border-steel-dark overflow-y-auto', className)}>

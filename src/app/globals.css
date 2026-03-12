@@ -1214,3 +1214,9 @@ img[class*="rounded-full"]:hover {
     background: #1e1e24;
   }
 }
+
+/* Ambient voice breathing animation */
+@keyframes breath {
+  0%, 100% { box-shadow: 0 0 10px rgba(0, 200, 232, 0.15); }
+  50% { box-shadow: 0 0 22px rgba(0, 200, 232, 0.4); }
+}

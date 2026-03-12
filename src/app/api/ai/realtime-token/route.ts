@@ -8,11 +8,11 @@
 import { NextResponse } from "next/server";
 import { ANGELINA_VOICE_INSTRUCTIONS } from "@/lib/angelina-context";
 
-// Default + allowed voice models
+// Cost-optimized: Mini only. Premium only if ALLOW_PREMIUM_REALTIME is set (e.g. for paying customers).
 const DEFAULT_REALTIME_MODEL = "gpt-4o-mini-realtime-preview-2024-12-17";
 const ALLOWED_VOICE_MODELS = [
-  "gpt-4o-realtime-preview-2024-12-17",
   "gpt-4o-mini-realtime-preview-2024-12-17",
+  ...(process.env.ALLOW_PREMIUM_REALTIME === "true" ? ["gpt-4o-realtime-preview-2024-12-17"] : []),
 ];
 
 export async function POST(request: Request) {

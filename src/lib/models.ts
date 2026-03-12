@@ -60,10 +60,10 @@ export const TEXT_MODELS: TextModel[] = [
   { id: 'or:openai/gpt-4.1-mini', label: 'GPT-4.1 Mini (OR)', description: 'Via OpenRouter', provider: 'openrouter', routerId: 'openai/gpt-4.1-mini-2025-04-14' },
 ];
 
+// Cost-optimized: Gemini first, Mini fallback only. Premium Realtime not shown (enable via ALLOW_PREMIUM_REALTIME on backend if needed).
 export const VOICE_MODELS = [
   { id: 'gemini-live', label: 'Gemini Live', description: 'Free, natural voice', provider: 'google' as const },
-  { id: 'gpt-4o-mini-realtime-preview-2024-12-17', label: 'GPT-4o Mini Realtime', description: 'OpenAI, $0.05/min', provider: 'openai' as const },
-  { id: 'gpt-4o-realtime-preview-2024-12-17', label: 'GPT-4o Realtime', description: 'OpenAI premium, $0.50/min', provider: 'openai' as const },
+  { id: 'gpt-4o-mini-realtime-preview-2024-12-17', label: 'GPT-4o Mini Realtime', description: 'OpenAI fallback, $0.05/min', provider: 'openai' as const },
 ] as const;
 
 export type TextModelId = string;

@@ -19,8 +19,12 @@ import { useState, useRef, useCallback, useEffect } from "react";
 // shimmer = warm female, coral = friendly female, sage = calm female
 export type AngelinaVoice = "shimmer" | "coral" | "sage" | "alloy" | "ash" | "ballad" | "echo" | "verse";
 
+/** push-to-talk = manual; continuous = hold to talk; ambient = always listening for wake word "Hey Angelina" (requires VAD + keyword spotting) */
+export type VoiceMode = "push-to-talk" | "continuous" | "ambient";
+
 interface UseAngelinaVoiceOptions {
   voice?: AngelinaVoice;
+  mode?: VoiceMode;
   onTranscript?: (text: string, isFinal: boolean) => void;
   onResponse?: (text: string) => void;
   onToolCall?: (name: string, args: object) => Promise<any>;
@@ -49,7 +53,8 @@ interface UseAngelinaVoiceReturn {
 
 export function useAngelinaVoice(options: UseAngelinaVoiceOptions = {}): UseAngelinaVoiceReturn {
   const {
-    voice = "shimmer", // Warm female voice for Angelina
+    voice = "shimmer",
+    mode = "push-to-talk",
     onTranscript,
     onResponse,
     onToolCall,
@@ -57,6 +62,7 @@ export function useAngelinaVoice(options: UseAngelinaVoiceOptions = {}): UseAnge
     onSpeakingChange,
     autoConnect = false,
   } = options;
+  const isAmbient = mode === "ambient";
 
   // State
   const [isConnected, setIsConnected] = useState(false);
@@ -65,6 +71,7 @@ export function useAngelinaVoice(options: UseAngelinaVoiceOptions = {}): UseAnge
   const [userTranscript, setUserTranscript] = useState("");
   const [aiTranscript, setAiTranscript] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [isAmbientActive, setIsAmbientActive] = useState(false);
 
   // Refs
   const wsRef = useRef<WebSocket | null>(null);
@@ -73,6 +80,8 @@ export function useAngelinaVoice(options: UseAngelinaVoiceOptions = {}): UseAnge
   const processorRef = useRef<ScriptProcessorNode | null>(null);
   const playbackQueueRef = useRef<Int16Array[]>([]);
   const isPlayingRef = useRef(false);
+  const ambientReconnectRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const handleToolCallRef = useRef<(data: any) => void>(() => {});
 
   // ─────────────────────────────────────────────────────────────
   // Audio Conversion Utilities
@@ -186,6 +195,33 @@ export function useAngelinaVoice(options: UseAngelinaVoiceOptions = {}): UseAnge
         case "conversation.item.input_audio_transcription.completed":
           const userText = data.transcript || "";
           console.log("[Angelina] 📝 You said:", userText);
+
+          // Ambient mode: only process if wake word detected
+          if (isAmbient && !isAmbientActive) {
+            const lower = userText.toLowerCase().trim();
+            const WAKE_PATTERNS = ["hey angelina", "hi angelina", "angelina"];
+            const woke = WAKE_PATTERNS.some(w => lower.startsWith(w) || lower.includes(w));
+            if (!woke) {
+              console.log("[Angelina] 🔇 Ambient: no wake word, ignoring");
+              break;
+            }
+            console.log("[Angelina] 🔔 Wake word detected!");
+            setIsAmbientActive(true);
+            // Strip wake word prefix and forward the rest as the actual query
+            let command = lower;
+            for (const w of WAKE_PATTERNS) {
+              if (command.startsWith(w)) { command = command.slice(w.length).trim(); break; }
+            }
+            if (command.length > 0) {
+              setUserTranscript(command);
+              onTranscript?.(command, true);
+            } else {
+              setUserTranscript(userText);
+              onTranscript?.(userText, true);
+            }
+            break;
+          }
+
           setUserTranscript(userText);
           onTranscript?.(userText, true);
           break;
@@ -225,11 +261,14 @@ export function useAngelinaVoice(options: UseAngelinaVoiceOptions = {}): UseAnge
 
         case "response.function_call_arguments.done":
           // Handle tool calls
-          handleToolCall(data);
+          handleToolCallRef.current(data);
           break;
 
         case "response.done":
           console.log("[Angelina] ✅ Response complete");
+          if (isAmbient) {
+            setIsAmbientActive(false);
+          }
           break;
 
         case "error":
@@ -248,7 +287,7 @@ export function useAngelinaVoice(options: UseAngelinaVoiceOptions = {}): UseAnge
     } catch (err) {
       console.error("[Angelina] Failed to parse message:", err);
     }
-  }, [onTranscript, onResponse, onError, playAudioQueue]);
+  }, [isAmbient, isAmbientActive, onTranscript, onResponse, onError, playAudioQueue]);
 
   // ─────────────────────────────────────────────────────────────
   // Tool Call Handler
@@ -301,6 +340,10 @@ export function useAngelinaVoice(options: UseAngelinaVoiceOptions = {}): UseAnge
       console.error("[Angelina] Tool error:", error);
     }
   }, [onToolCall]);
+
+  useEffect(() => {
+    handleToolCallRef.current = handleToolCall;
+  }, [handleToolCall]);
 
   // ─────────────────────────────────────────────────────────────
   // Connection Management
@@ -379,6 +422,11 @@ export function useAngelinaVoice(options: UseAngelinaVoiceOptions = {}): UseAnge
         if (event.code !== 1000 && event.code !== 1005) {
           setError(`Connection closed: ${event.reason || 'Unknown reason'}`);
         }
+        // Ambient mode: auto-reconnect on unexpected close
+        if (isAmbient && event.code !== 1000) {
+          console.log("[Angelina] 🔄 Ambient: auto-reconnect in 3s...");
+          ambientReconnectRef.current = setTimeout(() => connect(), 3000);
+        }
       };
 
       wsRef.current = ws;
@@ -388,7 +436,7 @@ export function useAngelinaVoice(options: UseAngelinaVoiceOptions = {}): UseAnge
       setError(message);
       onError?.(message);
     }
-  }, [voice, handleMessage, onError]);
+  }, [voice, handleMessage, isAmbient, onError]);
 
   const disconnect = useCallback(() => {
     console.log("[Angelina] Disconnecting...");
@@ -541,17 +589,20 @@ export function useAngelinaVoice(options: UseAngelinaVoiceOptions = {}): UseAnge
   // ─────────────────────────────────────────────────────────────
 
   useEffect(() => {
-    if (autoConnect) {
-      connect();
+    if (autoConnect || isAmbient) {
+      connect().then(() => {
+        if (isAmbient) startListening();
+      });
     }
     
     return () => {
+      if (ambientReconnectRef.current) clearTimeout(ambientReconnectRef.current);
       disconnect();
       if (audioContextRef.current) {
         audioContextRef.current.close();
       }
     };
-  }, [autoConnect, connect, disconnect]);
+  }, [autoConnect, isAmbient, connect, disconnect, startListening]);
 
   return {
     isConnected,

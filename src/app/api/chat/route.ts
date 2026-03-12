@@ -20,6 +20,8 @@ import { getPreferenceTracker } from '@/lib/preference-tracker';
 import { getAgentForTask } from '@/lib/agent-router';
 import { sanitizeUserInput } from '@/lib/security/prompt-guard';
 import { isActivated, tryActivate, refreshActivation, isActivationEnabled } from '@/lib/security/activation-guard';
+import { getSupabaseUserId } from '@/lib/supabase/server';
+import { extractAndSaveEntities } from '@/lib/knowledge-extractor';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -831,6 +833,14 @@ export async function POST(request: NextRequest) {
     const { rawData, ...clientResult } = responsePayload;
     if (clientResult.response && !clientResult.toolCalls) {
       clientResult.response = cleanResponseText(clientResult.response);
+    }
+
+    // Fire-and-forget: extract entities for knowledge graph (multi-user)
+    const assistantText = typeof clientResult.response === 'string' ? clientResult.response : '';
+    if (assistantText && userText) {
+      getSupabaseUserId()
+        .then((uid) => { if (uid) extractAndSaveEntities(uid, userText, assistantText).catch(() => {}); })
+        .catch(() => {});
     }
 
     // Include routing metadata for transparency

@@ -338,7 +338,7 @@ export function useRealtimeVoice(options: UseRealtimeVoiceOptions = {}): UseReal
           // Log voice usage for cost tracking
           if (data.response?.usage) {
             const voiceUsage = data.response.usage;
-            const voiceModel = model || "gpt-4o-realtime-preview-2024-12-17";
+            const voiceModel = model || "gpt-4o-mini-realtime-preview-2024-12-17";
             console.log("[Realtime] 💰 Usage:", JSON.stringify(voiceUsage));
             fetch("/api/usage", {
               method: "POST",
@@ -370,7 +370,7 @@ export function useRealtimeVoice(options: UseRealtimeVoiceOptions = {}): UseReal
     } catch (err) {
       console.error("[Realtime] Failed to parse message:", err);
     }
-  }, [onTranscript, onAIResponse, onError, playAudioQueue, stopAudioPlayback]);
+  }, [onTranscript, onAIResponse, onError, playAudioQueue, stopAudioPlayback, model]);
 
   // Connect to OpenAI Realtime API
   const connect = useCallback(async () => {
@@ -399,7 +399,7 @@ export function useRealtimeVoice(options: UseRealtimeVoiceOptions = {}): UseReal
       })
       .then((tokenData) => {
         const token = tokenData.token;
-        const model = tokenData.model || "gpt-4o-realtime-preview-2024-12-17";
+        const model = tokenData.model || "gpt-4o-mini-realtime-preview-2024-12-17";
         const serverTools = tokenData.tools || [];
         const serverInstructions = tokenData.instructions || systemPrompt;
         console.log("[Realtime] Token type:", tokenData.type, "Model:", model, "Tools:", serverTools.length);
@@ -469,7 +469,7 @@ export function useRealtimeVoice(options: UseRealtimeVoiceOptions = {}): UseReal
         reject(err);
       });
     });
-  }, [systemPrompt, voice, model, attachments, handleMessage, onError]);
+  }, [systemPrompt, voice, model, attachments, trainingFocus, handleMessage, onError]);
 
   // Disconnect
   const disconnect = useCallback(() => {
