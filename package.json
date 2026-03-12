@@ -14,12 +14,12 @@
     "test:watch": "vitest"
   },
   "dependencies": {
-    "@supabase/ssr": "^0.5.2",
-    "@supabase/supabase-js": "^2.47.0",
     "@capacitor/android": "^8.0.2",
     "@capacitor/cli": "^8.0.2",
     "@capacitor/core": "^8.0.2",
     "@grammyjs/auto-retry": "^2.0.2",
+    "@supabase/ssr": "^0.5.2",
+    "@supabase/supabase-js": "^2.47.0",
     "clsx": "^2.1.0",
     "dotenv": "^17.2.4",
     "framer-motion": "^11.0.0",
@@ -38,6 +38,7 @@
     "zustand": "^4.5.0"
   },
   "devDependencies": {
+    "@resvg/resvg-js": "^2.6.2",
     "@types/node": "^20",
     "@types/pg": "^8.16.0",
     "@types/react": "^18",
