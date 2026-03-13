@@ -737,6 +737,13 @@ function CommandCenterInner() {
           break;
         }
 
+        // Free tier limit reached
+        if (data.limitReached) {
+          finalText = data.message;
+          finalModel = textModel;
+          break;
+        }
+
         // No tool calls — we have the final text response
         if (!data.toolCalls || data.toolCalls.length === 0) {
           finalText = data.response || "I couldn't process that. Please try again.";

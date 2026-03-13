@@ -23,6 +23,7 @@ import { sanitizeUserInput } from '@/lib/security/prompt-guard';
 import { isActivated, tryActivate, refreshActivation, isActivationEnabled } from '@/lib/security/activation-guard';
 import { getSupabaseUserId } from '@/lib/supabase/server';
 import { extractAndSaveEntities } from '@/lib/knowledge-extractor';
+import { checkFreeGate, incrementUsage } from '@/lib/free-tier';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -563,6 +564,18 @@ export async function POST(request: NextRequest) {
       refreshActivation(sessionId);
     }
 
+    // ── 0.2 Free Tier Usage Gate ──
+    if (!isInternalRequest) {
+      const gate = await checkFreeGate(userId || 'default');
+      if (!gate.allowed) {
+        return NextResponse.json({
+          message: gate.upgradeMessage,
+          limitReached: true,
+          usage: { used: gate.used, limit: gate.limit, remaining: 0 },
+        });
+      }
+    }
+
     // ── 0.5 Agent Router: prepend specialized agent prompt for domain tasks ──
     const agentRouting = getAgentForTask(typeof userText === 'string' ? userText : '');
     if (agentRouting.confidence > 0.4 && agentRouting.agent.name !== 'angelina-prime') {
@@ -825,6 +838,8 @@ export async function POST(request: NextRequest) {
       });
       // Budget alert check (non-blocking)
       checkBudgetAlert(costTodayUsd + cost).catch(() => {});
+      // Increment free tier counter (non-blocking)
+      incrementUsage(userId || 'default').catch(() => {});
       // Preference tracking (non-blocking)
       try {
         getPreferenceTracker().record(
