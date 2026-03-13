@@ -812,17 +812,34 @@ function CommandCenterInner() {
         addActivity('chat', 'Chat Response', userMsg.slice(0, 50) + (userMsg.length > 50 ? '...' : ''), 'success');
       }
 
-      setMessages(prev => {
-        const updated = [...prev];
-        updated[updated.length - 1] = {
-          ...updated[updated.length - 1],
-          content: finalText,
-          isTyping: false,
-          model: finalModel,
-          toolUsed: toolLabel,
+      // Stream text character-by-character for a natural feel
+      const STREAM_CHUNK = 3; // characters per tick
+      const STREAM_DELAY = 12; // ms between ticks
+      const streamText = (text: string) => new Promise<void>(resolve => {
+        let i = 0;
+        const tick = () => {
+          i = Math.min(i + STREAM_CHUNK, text.length);
+          setMessages(prev => {
+            const updated = [...prev];
+            updated[updated.length - 1] = {
+              ...updated[updated.length - 1],
+              content: text.slice(0, i),
+              isTyping: i < text.length,
+              model: finalModel,
+              toolUsed: toolLabel,
+            };
+            return updated;
+          });
+          if (i < text.length) {
+            setTimeout(tick, STREAM_DELAY);
+          } else {
+            resolve();
+          }
         };
-        return updated;
+        tick();
       });
+
+      await streamText(finalText);
 
       // Persist assistant response
       if (finalText) {
