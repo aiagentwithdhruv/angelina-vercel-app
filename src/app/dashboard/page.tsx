@@ -11,6 +11,7 @@ import { KnowledgeCard } from '@/components/dashboard/KnowledgeCard';
 import { UsageCard } from '@/components/dashboard/UsageCard';
 import { InsightsCard } from '@/components/dashboard/InsightsCard';
 import { WeeklyCard } from '@/components/dashboard/WeeklyCard';
+import { CalendarCard } from '@/components/dashboard/CalendarCard';
 
 interface ProviderBalance {
   provider: string;
@@ -207,6 +208,7 @@ export default function Dashboard() {
           <h1 className="font-orbitron text-4xl font-bold metallic-text mb-6">Dashboard</h1>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="md:col-span-2"><BriefCard /></div>
+            <CalendarCard />
             <TasksCard />
             <GoalsCard />
             <KnowledgeCard />
@@ -251,6 +253,7 @@ export default function Dashboard() {
           <main className="px-3 pt-[72px] pb-[calc(72px+env(safe-area-inset-bottom))]">
             <div className="space-y-3 mb-4">
               <BriefCard />
+              <CalendarCard />
               <TasksCard />
               <GoalsCard />
               <KnowledgeCard />

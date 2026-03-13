@@ -5,18 +5,16 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { clsx } from 'clsx';
 import {
-  X, MessageCircle, Activity, BarChart3, Settings,
-  ListTodo, Users, Lightbulb, Brain,
+  X, MessageCircle, BarChart3, Settings,
+  ListTodo, Lightbulb, Brain,
 } from 'lucide-react';
 import { Avatar } from '../ui/avatar';
 
 const sidebarItems = [
   { href: '/', label: 'Chat', icon: MessageCircle },
-  { href: '/activity', label: 'Activity', icon: Activity },
   { href: '/dashboard', label: 'Dashboard', icon: BarChart3 },
   { href: '/tasks', label: 'Tasks', icon: ListTodo },
   { href: '/brain', label: 'Brain', icon: Brain },
-  { href: '/social', label: 'Social', icon: Users },
   { href: '/settings', label: 'Settings', icon: Settings },
 ];
 

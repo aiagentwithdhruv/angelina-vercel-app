@@ -4,14 +4,13 @@ import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { clsx } from 'clsx';
-import { Bell, Activity, ListTodo, LayoutDashboard, Users, Settings, PanelLeftOpen, Brain } from 'lucide-react';
+import { Bell, Activity, ListTodo, LayoutDashboard, Settings, PanelLeftOpen, Brain } from 'lucide-react';
 
 const navItems = [
   { href: '/', label: 'Chat', icon: Activity },
   { href: '/tasks', label: 'Tasks', icon: ListTodo },
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/brain', label: 'Brain', icon: Brain },
-  { href: '/social', label: 'Social', icon: Users },
   { href: '/settings', label: 'Settings', icon: Settings },
 ];
 

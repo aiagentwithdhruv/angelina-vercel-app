@@ -47,8 +47,13 @@ const config: Config = {
         'glow-pulse': 'glowPulse 1.5s ease-in-out infinite',
         'typing': 'typing 1.4s ease-in-out infinite',
         'voice-wave': 'voiceWave 0.5s ease-in-out infinite',
+        'breath': 'breath 3s ease-in-out infinite',
       },
       keyframes: {
+        breath: {
+          '0%, 100%': { boxShadow: '0 0 10px rgba(0,200,232,0.2)' },
+          '50%': { boxShadow: '0 0 25px rgba(0,200,232,0.4)' },
+        },
         glowPulse: {
           '0%, 100%': { boxShadow: '0 0 20px rgba(0, 200, 232, 0.25)' },
           '50%': { boxShadow: '0 0 40px rgba(0, 200, 232, 0.5)' },
