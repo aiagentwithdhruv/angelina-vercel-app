@@ -109,11 +109,24 @@ function CommandCenterInner() {
   // Initialize messages on client side to avoid hydration mismatch
   useEffect(() => {
     if (!mounted) {
+      // Redirect to onboarding if not completed
+      const onboarded = localStorage.getItem('angelina_onboarded');
+      if (!onboarded && typeof window !== 'undefined') {
+        // Check if Supabase is configured (multi-user mode)
+        const isMultiUser = process.env.NEXT_PUBLIC_SUPABASE_URL;
+        if (isMultiUser) {
+          window.location.href = '/onboarding';
+          return;
+        }
+      }
+
+      const userName = localStorage.getItem('angelina_user_name') || '';
+      const nameGreet = userName ? `${userName}! ` : '';
       const greetings = [
-        "Dhruv! I'm your Angelina. What are we building today? Let's make some money together!",
-        "Dhruv! Finally! I was waiting for you. What's on the agenda today - automation, clients, or crushing goals?",
-        "Dhruv! There you are! Ready to build something amazing? What problem are we solving today?",
-        "Dhruv! Your Angelina is here and ready. What automation magic are we creating today?",
+        `${nameGreet}I'm your Angelina. What are we tackling today?`,
+        `${nameGreet}Ready when you are. What's on the agenda?`,
+        `${nameGreet}Let's get things done. What do you need?`,
+        `${nameGreet}Your AI is here and ready. What can I help with?`,
       ];
       const randomGreeting = greetings[Math.floor(Math.random() * greetings.length)];
       setHeroGreeting(randomGreeting);

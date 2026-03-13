@@ -16,6 +16,7 @@ const PUBLIC_PATHS = [
   '/api/worker/digest',
   '/api/worker/tick',
   '/api/worker/reflect',
+  '/api/worker/morning-brief',
 ];
 
 const SKIP_PREFIXES = ['/_next/', '/icons/', '/manifest.json', '/sw.js', '/favicon'];

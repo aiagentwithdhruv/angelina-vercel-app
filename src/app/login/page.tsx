@@ -72,7 +72,9 @@ export default function LoginPage() {
         setLoading(false);
         return;
       }
-      window.location.href = '/';
+      // New users go to onboarding, returning users go to app
+      const onboarded = localStorage.getItem('angelina_onboarded');
+      window.location.href = onboarded ? '/' : '/onboarding';
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Sign in failed');
       setLoading(false);
