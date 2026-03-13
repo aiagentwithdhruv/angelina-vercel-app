@@ -959,25 +959,23 @@ function CommandCenterInner() {
               </button>
             </div>
             <div className="flex items-center gap-2 px-3 py-2 bg-charcoal border-t border-steel-dark">
-              <div className="flex-1 relative">
-                <input
-                  value={inputValue}
-                  onChange={(e) => setInputValue(e.target.value)}
-                  onKeyDown={handleKeyPress}
-                  placeholder={isConnected ? "Type or speak..." : "Message Angelina..."}
-                  className="w-full h-11 rounded-full bg-gunmetal border border-steel-dark pl-4 pr-10 text-[15px] text-text-primary placeholder:text-text-muted focus:border-cyan-glow/50 focus:outline-none"
-                />
-                <button
-                  onClick={dictation.toggle}
-                  className={clsx(
-                    'absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full flex items-center justify-center transition-all',
-                    dictation.isListening ? 'bg-cyan-glow/20 text-cyan-glow animate-pulse' : 'text-text-muted active:text-cyan-glow'
-                  )}
-                  title="Dictate"
-                >
-                  <Mic className="w-4 h-4" />
-                </button>
-              </div>
+              <button
+                onClick={dictation.toggle}
+                className={clsx(
+                  'w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 transition-all',
+                  dictation.isListening ? 'bg-cyan-glow/20 text-cyan-glow animate-pulse' : 'text-text-muted active:text-cyan-glow'
+                )}
+                title="Dictate"
+              >
+                <Mic className="w-[18px] h-[18px]" />
+              </button>
+              <input
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                onKeyDown={handleKeyPress}
+                placeholder={isConnected ? "Type or speak..." : "Message Angelina..."}
+                className="flex-1 h-11 rounded-full bg-gunmetal border border-steel-dark px-4 text-[15px] text-text-primary placeholder:text-text-muted focus:border-cyan-glow/50 focus:outline-none min-w-0"
+              />
               {inputValue.trim() ? (
                 <button onClick={handleSendMessage} className="w-11 h-11 rounded-full bg-gradient-to-br from-cyan-glow to-cyan-teal flex items-center justify-center flex-shrink-0 active:scale-95 transition-all" style={{ boxShadow: '0 0 20px rgba(0, 200, 232, 0.3)' }}>
                   <svg className="w-5 h-5 text-deep-space" fill="none" stroke="currentColor" viewBox="0 0 24 24">
