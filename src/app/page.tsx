@@ -13,6 +13,7 @@ import { VoiceFAB } from '@/components/ui/voice-fab';
 import { RecordForContextButton } from '@/components/ui/record-for-context-button';
 import { useRealtimeVoice } from '@/hooks/useRealtimeVoice';
 import { useGeminiLiveVoice } from '@/hooks/useGeminiLiveVoice';
+import { useDictation } from '@/hooks/useDictation';
 import { ANGELINA_SYSTEM_PROMPT } from '@/lib/angelina-context';
 import { detectUpgradeNeeded, UpgradeSuggestion } from '@/lib/smart-upgrade';
 import { diagnoseToolFailure } from '@/lib/self-fix';
@@ -61,6 +62,11 @@ function CommandCenterInner() {
   const [upgradePrompt, setUpgradePrompt] = useState<UpgradeSuggestion & { pendingMessage: string } | null>(null);
   const [quickActionsExpanded, setQuickActionsExpanded] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Dictation — speech-to-text for chat input
+  const dictation = useDictation(useCallback((text: string) => {
+    setInputValue(prev => prev ? `${prev} ${text}` : text);
+  }, []));
 
   // Conversation persistence
   const [conversations, setConversations] = useState<ConversationItem[]>([]);
@@ -953,13 +959,25 @@ function CommandCenterInner() {
               </button>
             </div>
             <div className="flex items-center gap-2 px-3 py-2 bg-charcoal border-t border-steel-dark">
-              <input
-                value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
-                onKeyDown={handleKeyPress}
-                placeholder={isConnected ? "Type or speak..." : "Message Angelina..."}
-                className="flex-1 h-11 rounded-full bg-gunmetal border border-steel-dark px-4 text-[15px] text-text-primary placeholder:text-text-muted focus:border-cyan-glow/50 focus:outline-none"
-              />
+              <div className="flex-1 relative">
+                <input
+                  value={inputValue}
+                  onChange={(e) => setInputValue(e.target.value)}
+                  onKeyDown={handleKeyPress}
+                  placeholder={isConnected ? "Type or speak..." : "Message Angelina..."}
+                  className="w-full h-11 rounded-full bg-gunmetal border border-steel-dark pl-4 pr-10 text-[15px] text-text-primary placeholder:text-text-muted focus:border-cyan-glow/50 focus:outline-none"
+                />
+                <button
+                  onClick={dictation.toggle}
+                  className={clsx(
+                    'absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full flex items-center justify-center transition-all',
+                    dictation.isListening ? 'bg-cyan-glow/20 text-cyan-glow animate-pulse' : 'text-text-muted active:text-cyan-glow'
+                  )}
+                  title="Dictate"
+                >
+                  <Mic className="w-4 h-4" />
+                </button>
+              </div>
               {inputValue.trim() ? (
                 <button onClick={handleSendMessage} className="w-11 h-11 rounded-full bg-gradient-to-br from-cyan-glow to-cyan-teal flex items-center justify-center flex-shrink-0 active:scale-95 transition-all" style={{ boxShadow: '0 0 20px rgba(0, 200, 232, 0.3)' }}>
                   <svg className="w-5 h-5 text-deep-space" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -968,7 +986,16 @@ function CommandCenterInner() {
                 </button>
               ) : (
                 <div className="flex items-center gap-2">
-                  <RecordForContextButton compact />
+                  <RecordForContextButton compact onSaved={(summary) => {
+                    if (summary) {
+                      setMessages(prev => [...prev, {
+                        id: `rec_${Date.now()}`,
+                        role: 'assistant',
+                        content: `Saved to Brain:\n\n> ${summary.slice(0, 300)}${summary.length > 300 ? '...' : ''}`,
+                        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                      }]);
+                    }
+                  }} />
                   <VoiceFAB onStart={handleVoiceStart} onStop={handleVoiceStop} isListening={isListening} isSpeaking={isSpeaking} isConnected={isConnected} isProcessing={false} error={error} className="!w-12 !h-12" />
                 </div>
               )}
@@ -1203,6 +1230,8 @@ function CommandCenterInner() {
                     onChange={(e) => setInputValue(e.target.value)}
                     onKeyDown={handleKeyPress}
                     placeholder={isConnected ? "Type or speak..." : "Type a message or click A to talk..."}
+                    onDictate={dictation.toggle}
+                    isDictating={dictation.isListening}
                   />
 
                   {/* Send Button or Voice FAB */}
@@ -1219,7 +1248,16 @@ function CommandCenterInner() {
                     </button>
                   ) : (
                     <div className="flex items-center gap-2">
-                      <RecordForContextButton />
+                      <RecordForContextButton onSaved={(summary) => {
+                        if (summary) {
+                          setMessages(prev => [...prev, {
+                            id: `rec_${Date.now()}`,
+                            role: 'assistant',
+                            content: `Saved to Brain:\n\n> ${summary.slice(0, 300)}${summary.length > 300 ? '...' : ''}`,
+                            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                          }]);
+                        }
+                      }} />
                       <VoiceFAB
                         onStart={handleVoiceStart}
                         onStop={handleVoiceStop}

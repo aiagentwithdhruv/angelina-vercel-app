@@ -88,10 +88,12 @@ Textarea.displayName = 'Textarea';
 // Chat Input Component (Pill-shaped)
 interface ChatInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   onAttach?: () => void;
+  onDictate?: () => void;
+  isDictating?: boolean;
 }
 
 export const ChatInput = React.forwardRef<HTMLInputElement, ChatInputProps>(
-  ({ className, onAttach, ...props }, ref) => {
+  ({ className, onAttach, onDictate, isDictating, ...props }, ref) => {
     return (
       <div className="relative flex-1">
         <button
@@ -106,12 +108,28 @@ export const ChatInput = React.forwardRef<HTMLInputElement, ChatInputProps>(
         <input
           ref={ref}
           className={clsx(
-            'w-full h-12 bg-charcoal border border-steel-dark rounded-full px-5 pl-12 text-base text-text-primary placeholder-text-muted',
+            'w-full h-12 bg-charcoal border border-steel-dark rounded-full pl-12 text-base text-text-primary placeholder-text-muted',
             'transition-all duration-200 input-glow',
+            onDictate ? 'pr-11' : 'px-5',
             className
           )}
           {...props}
         />
+        {onDictate && (
+          <button
+            type="button"
+            onClick={onDictate}
+            className={clsx(
+              'absolute right-3 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full flex items-center justify-center transition-all',
+              isDictating ? 'bg-cyan-glow/20 text-cyan-glow animate-pulse' : 'text-text-muted hover:text-cyan-glow'
+            )}
+            title="Dictate"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4M12 15a3 3 0 003-3V5a3 3 0 00-6 0v7a3 3 0 003 3z" />
+            </svg>
+          </button>
+        )}
       </div>
     );
   }
