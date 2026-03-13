@@ -34,12 +34,20 @@ export default function WelcomePage() {
           <span className="font-orbitron text-xl font-bold text-cyan-glow">A</span>
           <span className="font-orbitron text-sm tracking-[0.2em] metallic-text">ANGELINA</span>
         </div>
-        <Link
-          href="/"
-          className="px-4 py-2 rounded-full bg-cyan-glow/10 border border-cyan-glow/30 text-cyan-glow text-sm hover:bg-cyan-glow/20 transition-all"
-        >
-          Open App
-        </Link>
+        <div className="flex items-center gap-3">
+          <Link
+            href="/login"
+            className="px-4 py-2 text-sm text-text-secondary hover:text-text-primary transition-all"
+          >
+            Sign in
+          </Link>
+          <Link
+            href="/login"
+            className="px-4 py-2 rounded-full bg-cyan-glow/10 border border-cyan-glow/30 text-cyan-glow text-sm hover:bg-cyan-glow/20 transition-all"
+          >
+            Get Started
+          </Link>
+        </div>
       </nav>
 
       {/* Hero */}

@@ -30,9 +30,9 @@ function getGreetingSlot(hour: number): string {
 
 const SLOT_HINTS: Record<string, string> = {
   late_night:
-    "It's very late in India. If Dhruv is working, gently suggest wrapping up. Keep it short.",
+    "It's very late in India. If the user is working, gently suggest wrapping up. Keep it short.",
   early_morning:
-    "It's early morning. Be energizing: 'Rise and shine Dhruv!' style. Mention today's top task.",
+    "It's early morning. Be energizing: 'Rise and shine the user!' style. Mention today's top task.",
   morning:
     "Morning work hours. Be focused and action-oriented. Ask what he's tackling first.",
   afternoon:

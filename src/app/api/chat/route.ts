@@ -525,7 +525,10 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { messages, tools, model, source, userId, approvedTools, persona: personaId } = body;
+    const { messages, tools, model, source, userId: bodyUserId, approvedTools, persona: personaId } = body;
+    // Prefer Supabase auth user, fall back to body userId (for Telegram/internal)
+    const supabaseUserId = await getSupabaseUserId();
+    const userId = supabaseUserId || bodyUserId || undefined;
     let activeModel = model || DEFAULT_TEXT_MODEL;
     let activeProvider = getProvider(activeModel);
     requestModel = activeModel;

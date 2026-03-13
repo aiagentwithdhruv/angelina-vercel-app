@@ -8,9 +8,11 @@ import { updateSession } from '@/lib/supabase/middleware';
 
 const PUBLIC_PATHS = [
   '/login',
+  '/welcome',
   '/api/auth',
   '/api/health',
   '/api/telegram',
+  '/api/waitlist',
   '/api/worker/digest',
   '/api/worker/tick',
   '/api/worker/reflect',
@@ -54,9 +56,9 @@ export async function middleware(request: NextRequest) {
     const { response, user } = await updateSession(request);
     if (!user) {
       if (pathname.startsWith('/api/')) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-      const loginUrl = new URL('/login', request.url);
-      loginUrl.searchParams.set('from', pathname);
-      return NextResponse.redirect(loginUrl);
+      const welcomeUrl = new URL('/welcome', request.url);
+      welcomeUrl.searchParams.set('from', pathname);
+      return NextResponse.redirect(welcomeUrl);
     }
     return response;
   }
