@@ -4,7 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { clsx } from 'clsx';
-import { Bell, Activity, ListTodo, LayoutDashboard, Settings, PanelLeftOpen, Brain } from 'lucide-react';
+import { Activity, ListTodo, LayoutDashboard, Settings, PanelLeftOpen, Brain } from 'lucide-react';
 
 const navItems = [
   { href: '/', label: 'Chat', icon: Activity },
@@ -75,27 +75,13 @@ export const Header: React.FC<HeaderProps> = ({ isActive, onToggleSidebar, sideb
           </nav>
         </div>
 
-        {/* Right Section */}
-        <div className="flex items-center space-x-3">
-          {pathname !== '/login' && (
-            <Link href="/login" className="text-xs font-medium text-cyan-glow hover:text-cyan-400 border border-cyan-glow/40 hover:border-cyan-glow/60 rounded-lg px-3 py-1.5 transition-all">
-              Sign in
-            </Link>
-          )}
-          {/* Notifications */}
-          <button className="w-9 h-9 bg-gunmetal rounded-lg flex items-center justify-center border border-steel-dark hover:bg-steel-mid hover:border-cyan-glow/30 transition-all relative">
-            <Bell className="w-4 h-4 text-text-secondary" />
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-error rounded-full" style={{ boxShadow: '0 0 6px rgba(255, 59, 48, 0.5)' }} />
-          </button>
-
-          {/* Connection Status */}
-          <div className="flex items-center space-x-2 px-2.5 py-1.5 rounded-lg bg-gunmetal/50 border border-steel-dark/30">
-            <div
-              className="w-1.5 h-1.5 rounded-full bg-success"
-              style={{ boxShadow: '0 0 6px rgba(0, 232, 140, 0.6)' }}
-            />
-            <span className="text-[10px] text-text-muted font-mono">Online</span>
-          </div>
+        {/* Right Section — minimal */}
+        <div className="flex items-center">
+          <div
+            className="w-1.5 h-1.5 rounded-full bg-success"
+            style={{ boxShadow: '0 0 6px rgba(0, 232, 140, 0.6)' }}
+            title="Online"
+          />
         </div>
       </div>
     </header>

@@ -546,16 +546,14 @@ export async function POST(request: NextRequest) {
       if (!isActivated(sessionId)) {
         // Check if this message IS the activation code
         if (typeof userText === 'string' && tryActivate(sessionId, userText)) {
-          // Code accepted — respond and return
           return NextResponse.json({
-            message: '🔓 Future Angelina activated. I\'m fully operational now. What do you need?',
+            message: 'Angelina activated.',
             activated: true,
           });
         }
 
-        // Not activated, not the right code — ask for it
         return NextResponse.json({
-          message: '🔒 Future Angelina is locked. Please provide the activation code to continue.',
+          message: 'Enter activation code.',
           locked: true,
         });
       }
@@ -650,30 +648,24 @@ export async function POST(request: NextRequest) {
     const keyConfig = PROVIDER_KEYS[activeProvider];
     const apiKey = keyConfig ? await getApiKey(keyConfig.envKey, keyConfig.cookieId) : undefined;
 
-    // ── 3. Selective Memory Injection (top-5 relevant instead of all 500) ──
-    try {
-      const memoryContext = await memory.getMemoryContext(userText || undefined);
-      if (memoryContext) {
-        const systemIdx = messages.findIndex((m: any) => m.role === 'system');
-        if (systemIdx >= 0) {
-          messages[systemIdx].content += memoryContext;
+    // ── 3. Memory + Context Pulse (parallel — both are independent DB lookups) ──
+    {
+      const [memoryContext, pulse] = await Promise.all([
+        memory.getMemoryContext(userText || undefined).catch((e: Error) => {
+          console.warn('[Chat] Memory injection failed, skipping:', e.message);
+          return null;
+        }),
+        buildContextPulse(userText).catch(() => null),
+      ]);
+      const sysIdx = messages.findIndex((m: any) => m.role === 'system');
+      const extra = (memoryContext || '') + (pulse || '');
+      if (extra) {
+        if (sysIdx >= 0) {
+          messages[sysIdx].content += extra;
         } else {
-          messages.unshift({ role: 'system', content: memoryContext });
+          messages.unshift({ role: 'system', content: extra });
         }
       }
-    } catch (memErr) {
-      console.warn('[Chat] Memory injection failed (DB may be unavailable), skipping:', (memErr as Error).message);
-    }
-
-    // ── 3.5 Context Pulse: time-awareness, pending tasks, spend ──
-    try {
-      const pulse = await buildContextPulse(userText);
-      const sysIdx = messages.findIndex((m: any) => m.role === 'system');
-      if (sysIdx >= 0) {
-        messages[sysIdx].content += pulse;
-      }
-    } catch {
-      // Non-critical — skip silently
     }
 
     // ── 4. Conversation Compaction (summarize old messages if too long) ──

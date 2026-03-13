@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation';
 import { clsx } from 'clsx';
 import {
   X, MessageCircle, BarChart3, Settings,
-  ListTodo, Lightbulb, Brain,
+  ListTodo, Brain,
 } from 'lucide-react';
 import { Avatar } from '../ui/avatar';
 
@@ -89,16 +89,6 @@ export const MobileSidebar: React.FC<MobileSidebarProps> = ({ isOpen, onClose })
           })}
         </div>
 
-        {/* Tip Box */}
-        <div className="mx-3 mt-6 p-4 bg-charcoal rounded-xl border border-steel-dark">
-          <div className="flex items-center gap-2 mb-2">
-            <Lightbulb className="w-4 h-4 text-warning" />
-            <span className="text-xs font-semibold text-text-primary">Quick Tip</span>
-          </div>
-          <p className="text-xs text-text-muted leading-relaxed">
-            Say &quot;Hey Angelina&quot; in the chat to activate voice mode, or tap the A button.
-          </p>
-        </div>
       </aside>
     </>
   );

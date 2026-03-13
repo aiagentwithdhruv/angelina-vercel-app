@@ -390,6 +390,28 @@ export const TOOLS_REGISTRY: ToolDefinition[] = [
       },
     },
   },
+  {
+    name: 'openclaw_telegram',
+    description:
+      "Send a message to Dhruv's Telegram via OpenClaw's bot. Use for delegating tasks, sending reports, alerts, or any notification that should appear in the OpenClaw Telegram channel.",
+    endpoint: '/api/tools/openclaw_telegram',
+    category: 'infrastructure',
+    parameters: {
+      message: {
+        type: 'string',
+        description: 'The message text to send via OpenClaw Telegram bot. Supports Markdown.',
+        required: true,
+      },
+      command: {
+        type: 'string',
+        description: 'Optional: VPS command to execute first. Result gets sent to Telegram.',
+      },
+      agent: {
+        type: 'string',
+        description: 'Which OpenClaw agent to use if executing a VPS command: arjun, scout, creator, devops.',
+      },
+    },
+  },
 ];
 
 // ─── Lookup Maps (built once at import time) ────────────────────────────────

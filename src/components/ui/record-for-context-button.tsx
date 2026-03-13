@@ -60,11 +60,7 @@ export function RecordForContextButton({
         const count = Array.isArray(data.entitiesCreated) ? data.entitiesCreated.length : 0;
         const summary = typeof data.summary === 'string' ? data.summary : '';
         setStatus('saved');
-        setLastMessage(
-          data.saved === true
-            ? (count > 0 ? `Saved: ${count} item(s)` : 'Context saved')
-            : (count > 0 ? `Extracted: ${count} item(s)` : 'Extracted')
-        );
+        setLastMessage(count > 0 ? `Saved ${count} item(s)` : 'Saved');
         onSaved?.(summary, count);
         setTimeout(() => {
           setStatus('idle');

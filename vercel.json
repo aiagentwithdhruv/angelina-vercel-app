@@ -21,6 +21,10 @@
   },
   "crons": [
     {
+      "path": "/api/worker/tick?push=telegram",
+      "schedule": "*/15 * * * *"
+    },
+    {
       "path": "/api/worker/digest?push=telegram",
       "schedule": "0 3 * * *"
     }

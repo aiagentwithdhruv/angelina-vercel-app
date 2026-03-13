@@ -103,22 +103,12 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message }) => {
           )}
         </div>
 
-        {/* Timestamp + Model Info + Tool Badge */}
-        <div className={clsx('flex items-center gap-2 mt-1.5 flex-wrap', isUser ? 'mr-2 flex-row-reverse' : 'ml-2')}>
-          <span className="text-xs text-text-muted">
-            {message.timestamp}
-          </span>
-          {!isUser && message.model && (
-            <span className="text-[10px] px-1.5 py-0.5 rounded bg-steel-dark/50 text-text-muted font-mono">
-              {message.model}
-            </span>
-          )}
-          {!isUser && message.toolUsed && (
-            <span className="tool-badge">
-              {message.toolUsed}
-            </span>
-          )}
-        </div>
+        {/* Timestamp only — minimal, no model/tool badges */}
+        {message.timestamp && (
+          <div className={clsx('mt-1', isUser ? 'mr-2 text-right' : 'ml-2')}>
+            <span className="text-[10px] text-text-muted/60">{message.timestamp}</span>
+          </div>
+        )}
       </div>
     </div>
   );

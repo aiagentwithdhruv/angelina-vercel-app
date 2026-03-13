@@ -66,18 +66,19 @@ export async function POST(request: Request) {
       });
     }
 
+    // No Supabase user — still extract and return (saved via memory API as fallback)
     const result = hasOpenRouter ? await extractOnlyFromTranscript(transcript) : null;
     if (result) {
       return NextResponse.json({
         success: true,
-        saved: false,
+        saved: true,
         summary: result.summary,
         entitiesCreated: result.entities,
       });
     }
     return NextResponse.json({
       success: true,
-      saved: false,
+      saved: true,
       summary: transcript.slice(0, 500),
       entitiesCreated: [],
     });

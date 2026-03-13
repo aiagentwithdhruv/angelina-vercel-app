@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { clsx } from 'clsx';
-import { Mail, CheckSquare, Calendar, DollarSign, TrendingUp, Cpu, Mic, Globe, BookOpen, Newspaper, Phone, AlertTriangle, PanelLeftOpen } from 'lucide-react';
+import { Mail, CheckSquare, Calendar, DollarSign, TrendingUp, Cpu, Mic, Globe, BookOpen, Newspaper, Phone, AlertTriangle, PanelLeftOpen, ChevronUp } from 'lucide-react';
 import { Header } from '@/components/layout/header';
 import { ActivityPanel, Activity } from '@/components/layout/activity-panel';
 import { MobileLayout } from '@/components/layout/mobile-layout';
@@ -59,6 +59,7 @@ function CommandCenterInner() {
   const [heroGreeting, setHeroGreeting] = useState('');
   const [pendingTaskCount, setPendingTaskCount] = useState(0);
   const [upgradePrompt, setUpgradePrompt] = useState<UpgradeSuggestion & { pendingMessage: string } | null>(null);
+  const [quickActionsExpanded, setQuickActionsExpanded] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Conversation persistence
@@ -938,13 +939,18 @@ function CommandCenterInner() {
                 <p className="text-[11px] text-red-400">{error}</p>
               </div>
             )}
-            <div className="flex items-center gap-2 overflow-x-auto px-3 py-1.5 border-t border-steel-dark/30 mobile-scroll-hide bg-charcoal">
-              {quickActions.map((action, index) => (
+            {/* Collapsed quick actions — tap More to expand */}
+            <div className="flex items-center gap-1.5 overflow-x-auto px-3 py-1.5 border-t border-steel-dark/30 mobile-scroll-hide bg-charcoal">
+              {(quickActionsExpanded ? quickActions : quickActions.slice(0, 3)).map((action, index) => (
                 <button key={index} onClick={() => handleQuickAction(action.label)} className="flex-shrink-0 px-3 h-7 rounded-full bg-steel-dark text-[11px] text-text-secondary flex items-center gap-1.5 active:bg-steel-mid transition-all">
                   {action.icon}
                   <span>{action.label}</span>
                 </button>
               ))}
+              <button onClick={() => setQuickActionsExpanded(!quickActionsExpanded)} className="flex-shrink-0 px-2 h-7 rounded-full bg-steel-dark/60 text-[11px] text-text-muted flex items-center gap-1 active:bg-steel-mid transition-all">
+                <ChevronUp className={clsx('w-3 h-3 transition-transform', quickActionsExpanded ? 'rotate-0' : 'rotate-180')} />
+                <span>{quickActionsExpanded ? 'Less' : 'More'}</span>
+              </button>
             </div>
             <div className="flex items-center gap-2 px-3 py-2 bg-charcoal border-t border-steel-dark">
               <input
@@ -963,23 +969,23 @@ function CommandCenterInner() {
               ) : (
                 <div className="flex items-center gap-2">
                   <RecordForContextButton compact />
-                  <VoiceFAB onStart={handleVoiceStart} onStop={handleVoiceStop} isListening={isListening} isSpeaking={isSpeaking} isConnected={isConnected} isProcessing={false} className="!w-12 !h-12" />
+                  <VoiceFAB onStart={handleVoiceStart} onStop={handleVoiceStop} isListening={isListening} isSpeaking={isSpeaking} isConnected={isConnected} isProcessing={false} error={error} className="!w-12 !h-12" />
                 </div>
               )}
             </div>
-            <nav className="bg-charcoal border-t border-steel-dark" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
-              <div className="flex h-[52px]">
+            <nav className="bg-charcoal border-t border-steel-dark/50" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
+              <div className="flex h-[44px]">
                 {[
                   { href: '/', label: 'Chat', active: true },
-                  { href: '/activity', label: 'Activity', active: false },
+                  { href: '/tasks', label: 'Tasks', active: false },
                   { href: '/dashboard', label: 'Dashboard', active: false },
                   { href: '/settings', label: 'Settings', active: false },
                 ].map((tab) => (
-                  <a key={tab.href} href={tab.href} className={`flex-1 flex flex-col items-center justify-center gap-0.5 relative ${tab.active ? 'text-cyan-glow' : 'text-text-muted'}`}>
+                  <a key={tab.href} href={tab.href} className={`flex-1 flex items-center justify-center relative ${tab.active ? 'text-cyan-glow' : 'text-text-muted'}`}>
                     {tab.active && (
                       <div className="absolute top-0 left-1/4 right-1/4 h-[2px] bg-cyan-glow rounded-full" style={{ boxShadow: '0 0 12px rgba(0, 200, 232, 0.6)' }} />
                     )}
-                    <span className={`text-[10px] font-medium ${tab.active ? 'text-cyan-glow' : ''}`}>{tab.label}</span>
+                    <span className={`text-[11px] font-medium ${tab.active ? 'text-cyan-glow' : ''}`}>{tab.label}</span>
                   </a>
                 ))}
               </div>
@@ -993,7 +999,7 @@ function CommandCenterInner() {
         {/* Chat Area */}
         <div className={clsx('flex-1 flex flex-col transition-all duration-200 relative', sidebarOpen && 'ml-72')}>
           {/* Messages Container with subtle background */}
-          <div className="flex-1 overflow-y-auto px-6 py-6 space-y-4 chat-area-bg">
+          <div className="flex-1 overflow-y-auto px-8 py-8 space-y-5 chat-area-bg">
 
             {/* Desktop Welcome Hero */}
             {isInitialState && (
@@ -1028,15 +1034,15 @@ function CommandCenterInner() {
                   </Link>
                 )}
 
-                {/* Quick Actions — wider layout */}
-                <div className="grid grid-cols-3 gap-4 max-w-xl w-full">
-                  {quickActions.map((action, index) => (
+                {/* Quick Actions — clean 2x3 grid */}
+                <div className="grid grid-cols-3 gap-3 max-w-md w-full">
+                  {quickActions.slice(0, 6).map((action, index) => (
                     <button
                       key={index}
                       onClick={() => handleQuickAction(action.label)}
-                      className="quick-action-card flex items-center gap-3 py-3.5 px-4"
+                      className="quick-action-card flex items-center gap-3 py-3 px-4"
                     >
-                      <div className={`w-9 h-9 rounded-lg bg-gradient-to-br ${action.iconBg} flex items-center justify-center flex-shrink-0`}>
+                      <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${action.iconBg} flex items-center justify-center flex-shrink-0`}>
                         <span className={action.iconColor}>{action.icon}</span>
                       </div>
                       <span className="text-sm text-text-secondary text-left">{action.label}</span>
@@ -1045,7 +1051,7 @@ function CommandCenterInner() {
                 </div>
 
                 {/* Hint */}
-                <p className="text-xs text-text-muted mt-10">
+                <p className="text-xs text-text-muted/60 mt-8">
                   Type a message, click <span className="text-cyan-glow font-semibold font-orbitron">A</span> to talk, or pick an action above
                 </p>
               </div>
@@ -1139,8 +1145,8 @@ function CommandCenterInner() {
             </div>
           )}
 
-          {/* Model Selector Bar */}
-          <div className="px-6 py-2 flex items-center gap-3 border-t border-steel-dark/30">
+          {/* Model Selector — subtle */}
+          <div className="px-6 py-1.5 flex items-center gap-3 border-t border-steel-dark/20">
             <ModelSelector
               label="Text"
               icon={<Cpu className="w-3 h-3 text-cyan-glow/70" />}
@@ -1221,16 +1227,17 @@ function CommandCenterInner() {
                         isSpeaking={isSpeaking}
                         isConnected={isConnected}
                         isProcessing={false}
+                        error={error}
                       />
                     </div>
                   )}
                 </div>
               </div>
 
-              {/* Quick Actions Row - Only show when not in hero mode */}
+              {/* Quick Actions Row - Collapsed by default */}
               {!isInitialState && (
                 <div className="flex items-center space-x-2 overflow-x-auto pb-1">
-                  {quickActions.map((action, index) => (
+                  {(quickActionsExpanded ? quickActions : quickActions.slice(0, 4)).map((action, index) => (
                     <button
                       key={index}
                       onClick={() => handleQuickAction(action.label)}
@@ -1242,6 +1249,13 @@ function CommandCenterInner() {
                       <span>{action.label}</span>
                     </button>
                   ))}
+                  <button
+                    onClick={() => setQuickActionsExpanded(!quickActionsExpanded)}
+                    className="bg-gunmetal/50 border border-steel-dark/50 rounded-full px-3 py-1.5 text-xs text-text-muted whitespace-nowrap flex items-center space-x-1 flex-shrink-0 hover:text-text-secondary transition-all"
+                  >
+                    <ChevronUp className={clsx('w-3 h-3 transition-transform', quickActionsExpanded ? 'rotate-0' : 'rotate-180')} />
+                    <span>{quickActionsExpanded ? 'Less' : 'More'}</span>
+                  </button>
                 </div>
               )}
             </div>

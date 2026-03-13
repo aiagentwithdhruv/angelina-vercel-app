@@ -12,6 +12,7 @@ interface VoiceFABProps {
   isSpeaking?: boolean;
   isConnected?: boolean;
   isAmbient?: boolean;
+  error?: string | null;
   className?: string;
 }
 
@@ -24,6 +25,7 @@ export const VoiceFAB: React.FC<VoiceFABProps> = ({
   isSpeaking = false,
   isConnected = false,
   isAmbient = false,
+  error = null,
   className,
 }) => {
   const [isHovered, setIsHovered] = useState(false);
@@ -65,6 +67,11 @@ export const VoiceFAB: React.FC<VoiceFABProps> = ({
 
   return (
     <div className="relative">
+      {error && !showAmbientTooltip && (
+        <div className="absolute -top-10 left-1/2 -translate-x-1/2 whitespace-nowrap bg-charcoal text-xs text-red-400 px-2 py-1 rounded border border-red-400/30 z-50 max-w-[200px] truncate">
+          {error}
+        </div>
+      )}
       {showAmbientTooltip && (
         <div className="absolute -top-10 left-1/2 -translate-x-1/2 whitespace-nowrap bg-charcoal text-xs text-cyan-glow px-2 py-1 rounded border border-cyan-glow/30 z-50">
           {isAmbient ? 'Ambient ON — say "Hey Angelina"' : 'Ambient OFF'}
