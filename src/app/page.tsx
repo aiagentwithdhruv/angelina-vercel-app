@@ -21,6 +21,7 @@ import { TEXT_MODELS, VOICE_MODELS, DEFAULT_TEXT_MODEL, DEFAULT_VOICE_MODEL, Tex
 import { ModelSelector } from '@/components/ui/model-selector';
 import { ConversationSidebar, ConversationItem } from '@/components/chat/conversation-sidebar';
 import { ProactiveBanner } from '@/components/ui/proactive-banner';
+import { PERSONAS, DEFAULT_PERSONA_ID, getPersonaById } from '@/lib/personas';
 
 // Quick action config with icon colors (matching activity panel palette)
 const quickActions = [
@@ -61,7 +62,25 @@ function CommandCenterInner() {
   const [pendingTaskCount, setPendingTaskCount] = useState(0);
   const [upgradePrompt, setUpgradePrompt] = useState<UpgradeSuggestion & { pendingMessage: string } | null>(null);
   const [quickActionsExpanded, setQuickActionsExpanded] = useState(false);
+  const [activePersona, setActivePersona] = useState(DEFAULT_PERSONA_ID);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Persona switcher
+  const switchPersona = useCallback((id: string) => {
+    setActivePersona(id);
+    localStorage.setItem('angelina_persona', id);
+    const persona = getPersonaById(id);
+    // Show a brief greeting when switching
+    if (id !== DEFAULT_PERSONA_ID) {
+      setMessages([{
+        id: `persona_${Date.now()}`,
+        role: 'assistant' as const,
+        content: `${persona.emoji} *${persona.name} mode activated.* ${persona.tagline}.`,
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      }]);
+      setShowHero(false);
+    }
+  }, []);
 
   // Dictation — speech-to-text for chat input
   const dictation = useDictation(useCallback((text: string) => {
@@ -100,6 +119,9 @@ function CommandCenterInner() {
       setHeroGreeting(randomGreeting);
       setMessages([]);
       setShowHero(true);
+      // Restore persona from localStorage
+      const savedPersona = localStorage.getItem('angelina_persona');
+      if (savedPersona) setActivePersona(savedPersona);
       setMounted(true);
     }
   }, [mounted]);
@@ -697,6 +719,7 @@ function CommandCenterInner() {
             messages: loopMessages,
             tools: chatTools,
             model: effectiveModel,
+            persona: activePersona,
           }),
         });
         const data = await response.json();
@@ -859,7 +882,26 @@ function CommandCenterInner() {
                 </div>
                 <h1 className="font-orbitron text-xl font-bold metallic-text mb-1 tracking-[0.2em]">ANGELINA</h1>
                 <p className="text-[10px] text-text-muted font-mono tracking-widest uppercase mb-3">Personal AI Operating System</p>
-                <p className="text-sm text-text-secondary max-w-xs mb-5">{heroGreeting}</p>
+                <p className="text-sm text-text-secondary max-w-xs mb-4">{heroGreeting}</p>
+
+                {/* Persona Selector — Mobile */}
+                <div className="flex gap-2 overflow-x-auto w-full max-w-xs pb-2 mb-4 scrollbar-hide">
+                  {PERSONAS.map((p) => (
+                    <button
+                      key={p.id}
+                      onClick={() => switchPersona(p.id)}
+                      className={clsx(
+                        'flex flex-col items-center gap-1 px-3 py-2 rounded-xl border transition-all flex-shrink-0 min-w-[68px]',
+                        activePersona === p.id
+                          ? 'border-cyan-glow/60 bg-cyan-glow/10 shadow-[0_0_8px_rgba(0,200,232,0.15)]'
+                          : 'border-steel-dark bg-gunmetal/50 hover:border-steel-mid'
+                      )}
+                    >
+                      <span className="text-lg">{p.emoji === 'A' ? <span className="font-orbitron font-bold text-cyan-glow text-sm">A</span> : p.emoji}</span>
+                      <span className="text-[9px] text-text-secondary whitespace-nowrap">{p.name}</span>
+                    </button>
+                  ))}
+                </div>
 
                 {/* Pending Tasks Alert — Mobile */}
                 {pendingTaskCount > 0 && (
@@ -947,6 +989,18 @@ function CommandCenterInner() {
             )}
             {/* Collapsed quick actions — tap More to expand */}
             <div className="flex items-center gap-1.5 overflow-x-auto px-3 py-1.5 border-t border-steel-dark/30 mobile-scroll-hide bg-charcoal">
+              {/* Active persona chip */}
+              {activePersona !== 'default' && (
+                <button
+                  onClick={() => switchPersona('default')}
+                  className="flex-shrink-0 px-2.5 h-7 rounded-full bg-cyan-glow/10 border border-cyan-glow/30 text-[11px] text-cyan-glow flex items-center gap-1 active:bg-cyan-glow/20 transition-all"
+                  title="Tap to reset persona"
+                >
+                  <span>{getPersonaById(activePersona).emoji}</span>
+                  <span>{getPersonaById(activePersona).name}</span>
+                  <span className="text-text-muted ml-0.5">&times;</span>
+                </button>
+              )}
               {(quickActionsExpanded ? quickActions : quickActions.slice(0, 3)).map((action, index) => (
                 <button key={index} onClick={() => handleQuickAction(action.label)} className="flex-shrink-0 px-3 h-7 rounded-full bg-steel-dark text-[11px] text-text-secondary flex items-center gap-1.5 active:bg-steel-mid transition-all">
                   {action.icon}
@@ -1041,7 +1095,26 @@ function CommandCenterInner() {
                 {/* Title */}
                 <h1 className="font-orbitron text-3xl font-bold metallic-text mb-1.5 tracking-[0.25em]">ANGELINA</h1>
                 <p className="text-xs text-text-muted font-mono tracking-[0.3em] uppercase mb-4">Personal AI Operating System</p>
-                <p className="text-base text-text-secondary max-w-lg mb-8">{heroGreeting}</p>
+                <p className="text-base text-text-secondary max-w-lg mb-6">{heroGreeting}</p>
+
+                {/* Persona Selector — Desktop */}
+                <div className="flex gap-3 mb-8">
+                  {PERSONAS.map((p) => (
+                    <button
+                      key={p.id}
+                      onClick={() => switchPersona(p.id)}
+                      className={clsx(
+                        'flex flex-col items-center gap-1.5 px-4 py-3 rounded-xl border transition-all min-w-[80px]',
+                        activePersona === p.id
+                          ? 'border-cyan-glow/60 bg-cyan-glow/10 shadow-[0_0_12px_rgba(0,200,232,0.15)]'
+                          : 'border-steel-dark bg-gunmetal/50 hover:border-steel-mid hover:bg-charcoal/50'
+                      )}
+                    >
+                      <span className="text-xl">{p.emoji === 'A' ? <span className="font-orbitron font-bold text-cyan-glow text-base">A</span> : p.emoji}</span>
+                      <span className="text-xs text-text-secondary">{p.name}</span>
+                    </button>
+                  ))}
+                </div>
 
                 {/* Pending Tasks Alert */}
                 {pendingTaskCount > 0 && (

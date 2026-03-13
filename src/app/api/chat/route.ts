@@ -15,6 +15,7 @@ import { evaluateToolApproval } from '@/lib/approval-gate';
 import { compactConversation, needsCompaction } from '@/lib/conversation-compactor';
 import { resilientCall } from '@/lib/resilient-provider';
 import { buildContextPulse } from '@/lib/context-pulse';
+import { getPersonaById } from '@/lib/personas';
 import { checkBudgetAlert } from '@/lib/proactive-push';
 import { getPreferenceTracker } from '@/lib/preference-tracker';
 import { getAgentForTask } from '@/lib/agent-router';
@@ -523,7 +524,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { messages, tools, model, source, userId, approvedTools } = body;
+    const { messages, tools, model, source, userId, approvedTools, persona: personaId } = body;
     let activeModel = model || DEFAULT_TEXT_MODEL;
     let activeProvider = getProvider(activeModel);
     requestModel = activeModel;
@@ -664,6 +665,20 @@ export async function POST(request: NextRequest) {
           messages[sysIdx].content += extra;
         } else {
           messages.unshift({ role: 'system', content: extra });
+        }
+      }
+    }
+
+    // ── 3.5 Persona injection ──
+    if (personaId && personaId !== 'default') {
+      const persona = getPersonaById(personaId);
+      if (persona.systemModifier) {
+        const sysIdx2 = messages.findIndex((m: any) => m.role === 'system');
+        const personaBlock = `\n\n${persona.systemModifier}\n`;
+        if (sysIdx2 >= 0) {
+          messages[sysIdx2].content = personaBlock + messages[sysIdx2].content;
+        } else {
+          messages.unshift({ role: 'system', content: personaBlock });
         }
       }
     }
