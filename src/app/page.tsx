@@ -841,8 +841,77 @@ function CommandCenterInner() {
   // Angelina is "active" when typing a response, listening, or speaking
   const isAngelinaActive = isSpeaking || isListening || (messages.length > 0 && messages[messages.length - 1]?.isTyping === true);
 
+  // Full-screen voice overlay state
+  const isVoiceActive = isConnected || isListening || isSpeaking;
+
   return (
     <div className="min-h-screen bg-deep-space">
+      {/* Full-screen Voice Overlay — Jarvis Mode */}
+      {isVoiceActive && isInitialState && (
+        <div className="fixed inset-0 z-50 bg-deep-space/95 backdrop-blur-xl flex flex-col items-center justify-center">
+          {/* Close button */}
+          <button
+            onClick={handleVoiceStop}
+            className="absolute top-6 right-6 text-text-muted hover:text-text-primary transition-colors text-sm flex items-center gap-2"
+          >
+            <span>End</span>
+            <span className="text-lg">&times;</span>
+          </button>
+
+          {/* Voice orb — animated based on state */}
+          <div className="relative mb-8">
+            {/* Pulsing rings when listening */}
+            {isListening && (
+              <>
+                <div className="absolute -inset-12 rounded-full border border-cyan-glow/20 animate-ping" style={{ animationDuration: '2s' }} />
+                <div className="absolute -inset-8 rounded-full border border-cyan-glow/30 animate-ping" style={{ animationDuration: '1.5s', animationDelay: '0.3s' }} />
+                <div className="absolute -inset-4 rounded-full border border-cyan-glow/40 animate-ping" style={{ animationDuration: '1s', animationDelay: '0.6s' }} />
+              </>
+            )}
+            {/* Waveform rings when speaking */}
+            {isSpeaking && (
+              <>
+                <div className="absolute -inset-10 rounded-full border-2 border-cyan-glow/30 animate-pulse" />
+                <div className="absolute -inset-6 rounded-full border-2 border-cyan-glow/50 animate-pulse" style={{ animationDelay: '0.2s' }} />
+              </>
+            )}
+            <div className={clsx(
+              'w-40 h-40 md:w-48 md:h-48 rounded-full flex items-center justify-center border-2 transition-all duration-500',
+              isListening && 'bg-cyan-glow/10 border-cyan-glow/60 shadow-[0_0_80px_rgba(0,200,232,0.4)]',
+              isSpeaking && 'bg-cyan-glow/15 border-cyan-glow shadow-[0_0_100px_rgba(0,200,232,0.5)] animate-pulse',
+              !isListening && !isSpeaking && 'bg-gunmetal/50 border-cyan-glow/30 shadow-[0_0_40px_rgba(0,200,232,0.2)]'
+            )}>
+              <span className="text-5xl md:text-6xl font-bold font-orbitron text-cyan-glow drop-shadow-[0_0_20px_rgba(0,200,232,0.9)]">A</span>
+            </div>
+          </div>
+
+          {/* Status text */}
+          <p className="font-orbitron text-lg tracking-[0.2em] text-cyan-glow mb-2">
+            {isListening ? 'LISTENING' : isSpeaking ? 'SPEAKING' : 'CONNECTED'}
+          </p>
+          <p className="text-sm text-text-muted mb-6">
+            {isListening ? 'Say something...' : isSpeaking ? 'Angelina is responding' : 'Ready for your voice'}
+          </p>
+
+          {/* Live transcripts */}
+          {isListening && userTranscript && (
+            <div className="max-w-md px-6 py-3 rounded-2xl bg-gunmetal/60 border border-steel-dark mb-4">
+              <p className="text-text-primary text-sm">{userTranscript}</p>
+            </div>
+          )}
+          {isSpeaking && aiTranscript && (
+            <div className="max-w-md px-6 py-3 rounded-2xl bg-cyan-glow/5 border border-cyan-glow/20 mb-4">
+              <p className="text-text-primary text-sm">{aiTranscript}</p>
+            </div>
+          )}
+
+          {/* Voice model badge */}
+          <span className="text-[10px] px-2 py-1 rounded bg-steel-dark/50 text-text-muted font-mono">
+            {VOICE_MODELS.find(m => m.id === voiceModel)?.label || voiceModel}
+          </span>
+        </div>
+      )}
+
       {/* Conversation History Sidebar */}
       <ConversationSidebar
         conversations={conversations}
@@ -869,20 +938,28 @@ function CommandCenterInner() {
         <MobileLayout hideNav onChatHistory={() => setSidebarOpen(true)}>
           {/* Scrollable Messages Area */}
           <div className="flex-1 overflow-y-auto pt-[72px] pb-[160px] px-3 space-y-3 chat-area-bg">
-            {/* Mobile Welcome Hero */}
+            {/* Mobile Welcome Hero — Voice-First */}
             {isInitialState && (
-              <div className="flex flex-col items-center justify-center min-h-[50vh] text-center px-4">
-                {/* Metallic A Logo with orbit rings */}
-                <div className="relative mb-5">
-                  <div className="w-20 h-20 rounded-full hero-glow-ring flex items-center justify-center">
-                    <span className="text-4xl font-bold hero-a-metallic font-orbitron">A</span>
+              <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-4">
+                {/* Voice Orb — Primary CTA */}
+                <button
+                  onClick={handleVoiceStart}
+                  className="relative mb-6 group"
+                >
+                  {/* Outer pulse rings */}
+                  <div className="absolute inset-0 w-32 h-32 -m-4 rounded-full border border-cyan-glow/20 animate-ping" style={{ animationDuration: '3s' }} />
+                  <div className="absolute inset-0 w-28 h-28 -m-2 rounded-full border border-cyan-glow/10 animate-ping" style={{ animationDuration: '2.5s', animationDelay: '0.5s' }} />
+                  {/* Main orb */}
+                  <div className="w-24 h-24 rounded-full flex items-center justify-center bg-gradient-to-br from-cyan-glow/20 to-cyan-teal/10 border-2 border-cyan-glow/40 group-active:scale-95 transition-all duration-200"
+                    style={{ boxShadow: '0 0 40px rgba(0, 200, 232, 0.3), inset 0 0 30px rgba(0, 200, 232, 0.1)' }}>
+                    <Mic className="w-10 h-10 text-cyan-glow drop-shadow-[0_0_12px_rgba(0,200,232,0.8)]" />
                   </div>
-                  <div className="hero-orbit-ring" />
-                  <div className="hero-orbit-ring-2" />
-                </div>
+                </button>
+
                 <h1 className="font-orbitron text-xl font-bold metallic-text mb-1 tracking-[0.2em]">ANGELINA</h1>
-                <p className="text-[10px] text-text-muted font-mono tracking-widest uppercase mb-3">Personal AI Operating System</p>
-                <p className="text-sm text-text-secondary max-w-xs mb-4">{heroGreeting}</p>
+                <p className="text-[10px] text-text-muted font-mono tracking-widest uppercase mb-2">Personal AI Operating System</p>
+                <p className="text-cyan-glow/80 text-sm font-medium mb-1">Tap to talk</p>
+                <p className="text-xs text-text-muted mb-5">or type below</p>
 
                 {/* Persona Selector — Mobile */}
                 <div className="flex gap-2 overflow-x-auto w-full max-w-xs pb-2 mb-4 scrollbar-hide">
@@ -919,18 +996,16 @@ function CommandCenterInner() {
                   </Link>
                 )}
 
-                {/* Quick Actions Grid */}
-                <div className="grid grid-cols-3 gap-2 w-full max-w-xs">
-                  {quickActions.slice(0, 6).map((action, index) => (
+                {/* Quick Actions — compact row */}
+                <div className="flex gap-2 overflow-x-auto w-full max-w-xs scrollbar-hide">
+                  {quickActions.slice(0, 5).map((action, index) => (
                     <button
                       key={index}
                       onClick={() => handleQuickAction(action.label)}
-                      className="quick-action-card flex flex-col items-center gap-1.5 py-3 px-2"
+                      className="flex-shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-full bg-gunmetal/60 border border-steel-dark text-[11px] text-text-secondary active:bg-steel-mid transition-all"
                     >
-                      <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${action.iconBg} flex items-center justify-center`}>
-                        <span className={action.iconColor}>{action.icon}</span>
-                      </div>
-                      <span className="text-[10px] text-text-secondary">{action.label}</span>
+                      {action.icon}
+                      <span>{action.label}</span>
                     </button>
                   ))}
                 </div>
@@ -1080,22 +1155,29 @@ function CommandCenterInner() {
           {/* Messages Container with subtle background */}
           <div className="flex-1 overflow-y-auto px-8 py-8 space-y-5 chat-area-bg">
 
-            {/* Desktop Welcome Hero */}
+            {/* Desktop Welcome Hero — Voice-First */}
             {isInitialState && (
               <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
-                {/* Metallic A Logo with orbit rings */}
-                <div className="relative mb-8">
-                  <div className="w-28 h-28 rounded-full hero-glow-ring flex items-center justify-center">
-                    <span className="text-5xl font-bold hero-a-metallic font-orbitron">A</span>
+                {/* Voice Orb — Primary CTA */}
+                <button
+                  onClick={handleVoiceStart}
+                  className="relative mb-8 group cursor-pointer"
+                >
+                  {/* Outer pulse rings */}
+                  <div className="absolute -inset-8 rounded-full border border-cyan-glow/15 animate-ping" style={{ animationDuration: '3s' }} />
+                  <div className="absolute -inset-5 rounded-full border border-cyan-glow/10 animate-ping" style={{ animationDuration: '2.5s', animationDelay: '0.5s' }} />
+                  <div className="absolute -inset-3 rounded-full border border-cyan-glow/20 group-hover:border-cyan-glow/40 transition-all" />
+                  {/* Main orb */}
+                  <div className="w-36 h-36 rounded-full flex items-center justify-center bg-gradient-to-br from-cyan-glow/15 to-cyan-teal/5 border-2 border-cyan-glow/40 group-hover:border-cyan-glow/70 group-hover:scale-105 group-active:scale-95 transition-all duration-300"
+                    style={{ boxShadow: '0 0 60px rgba(0, 200, 232, 0.25), inset 0 0 40px rgba(0, 200, 232, 0.08)' }}>
+                    <Mic className="w-14 h-14 text-cyan-glow drop-shadow-[0_0_16px_rgba(0,200,232,0.8)] group-hover:drop-shadow-[0_0_24px_rgba(0,200,232,1)] transition-all" />
                   </div>
-                  <div className="hero-orbit-ring" />
-                  <div className="hero-orbit-ring-2" />
-                </div>
+                </button>
 
-                {/* Title */}
                 <h1 className="font-orbitron text-3xl font-bold metallic-text mb-1.5 tracking-[0.25em]">ANGELINA</h1>
-                <p className="text-xs text-text-muted font-mono tracking-[0.3em] uppercase mb-4">Personal AI Operating System</p>
-                <p className="text-base text-text-secondary max-w-lg mb-6">{heroGreeting}</p>
+                <p className="text-xs text-text-muted font-mono tracking-[0.3em] uppercase mb-3">Personal AI Operating System</p>
+                <p className="text-cyan-glow/80 text-base font-medium mb-1">Click to start talking</p>
+                <p className="text-sm text-text-muted mb-6">or type a message below</p>
 
                 {/* Persona Selector — Desktop */}
                 <div className="flex gap-3 mb-8">
@@ -1132,26 +1214,19 @@ function CommandCenterInner() {
                   </Link>
                 )}
 
-                {/* Quick Actions — clean 2x3 grid */}
-                <div className="grid grid-cols-3 gap-3 max-w-md w-full">
+                {/* Quick Actions — horizontal pills */}
+                <div className="flex gap-2 flex-wrap justify-center max-w-lg">
                   {quickActions.slice(0, 6).map((action, index) => (
                     <button
                       key={index}
                       onClick={() => handleQuickAction(action.label)}
-                      className="quick-action-card flex items-center gap-3 py-3 px-4"
+                      className="flex items-center gap-2 px-4 py-2 rounded-full bg-gunmetal/60 border border-steel-dark hover:border-steel-mid hover:bg-charcoal/50 text-sm text-text-secondary transition-all"
                     >
-                      <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${action.iconBg} flex items-center justify-center flex-shrink-0`}>
-                        <span className={action.iconColor}>{action.icon}</span>
-                      </div>
-                      <span className="text-sm text-text-secondary text-left">{action.label}</span>
+                      {action.icon}
+                      <span>{action.label}</span>
                     </button>
                   ))}
                 </div>
-
-                {/* Hint */}
-                <p className="text-xs text-text-muted/60 mt-8">
-                  Type a message, click <span className="text-cyan-glow font-semibold font-orbitron">A</span> to talk, or pick an action above
-                </p>
               </div>
             )}
 
