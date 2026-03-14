@@ -1220,3 +1220,229 @@ img[class*="rounded-full"]:hover {
   0%, 100% { box-shadow: 0 0 10px rgba(0, 200, 232, 0.15); }
   50% { box-shadow: 0 0 22px rgba(0, 200, 232, 0.4); }
 }
+
+/* ===== LANDING PAGE PREMIUM EFFECTS ===== */
+
+/* Grid Background — tilted perspective */
+.landing-grid-bg {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.landing-grid-bg::before {
+  content: '';
+  position: absolute;
+  inset: -50%;
+  background-image:
+    linear-gradient(rgba(0, 200, 232, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 200, 232, 0.06) 1px, transparent 1px);
+  background-size: 60px 60px;
+  transform: perspective(600px) rotateX(12deg) rotateY(-3deg);
+  mask-image: radial-gradient(ellipse 80% 60% at 50% 30%, black 0%, transparent 70%);
+  -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 30%, black 0%, transparent 70%);
+}
+
+/* Dot grid variant */
+.landing-grid-dots {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+  background-image: radial-gradient(circle at 1px 1px, rgba(0, 200, 232, 0.08) 1px, transparent 0);
+  background-size: 40px 40px;
+  mask-image: radial-gradient(ellipse 70% 50% at 50% 50%, black 0%, transparent 70%);
+  -webkit-mask-image: radial-gradient(ellipse 70% 50% at 50% 50%, black 0%, transparent 70%);
+}
+
+/* Floating orbs */
+@keyframes float-slow {
+  0%, 100% { transform: translateY(0) translateX(0); }
+  33% { transform: translateY(-20px) translateX(10px); }
+  66% { transform: translateY(10px) translateX(-15px); }
+}
+
+.float-orb {
+  animation: float-slow 8s ease-in-out infinite;
+}
+
+/* Rotating light rays — conic gradient */
+@keyframes ray-sway {
+  0%, 100% { transform: translateX(-50%) rotate(-2deg); }
+  50% { transform: translateX(-50%) rotate(2deg); }
+}
+
+.landing-rays {
+  position: absolute;
+  top: -10%;
+  left: 50%;
+  width: 140%;
+  height: 110%;
+  transform: translateX(-50%);
+  transform-origin: top center;
+  animation: ray-sway 8s ease-in-out infinite;
+  background:
+    conic-gradient(from 250deg at 50% 0%,
+      transparent 0deg,
+      rgba(0, 200, 232, 0.08) 4deg,
+      rgba(0, 200, 232, 0.15) 8deg,
+      rgba(0, 200, 232, 0.08) 12deg,
+      transparent 16deg,
+      transparent 30deg,
+      rgba(0, 180, 220, 0.06) 33deg,
+      rgba(0, 180, 220, 0.12) 36deg,
+      rgba(0, 180, 220, 0.06) 39deg,
+      transparent 42deg,
+      transparent 56deg,
+      rgba(0, 200, 232, 0.05) 59deg,
+      rgba(0, 200, 232, 0.10) 62deg,
+      rgba(0, 200, 232, 0.05) 65deg,
+      transparent 68deg,
+      transparent 82deg,
+      rgba(0, 160, 200, 0.07) 85deg,
+      rgba(0, 160, 200, 0.13) 88deg,
+      rgba(0, 160, 200, 0.07) 91deg,
+      transparent 94deg,
+      transparent 108deg,
+      rgba(0, 200, 232, 0.06) 111deg,
+      rgba(0, 200, 232, 0.11) 114deg,
+      rgba(0, 200, 232, 0.06) 117deg,
+      transparent 120deg,
+      transparent 360deg
+    );
+  mask-image: radial-gradient(ellipse 80% 70% at 50% 0%, black 0%, transparent 80%);
+  -webkit-mask-image: radial-gradient(ellipse 80% 70% at 50% 0%, black 0%, transparent 80%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Center glow */
+.landing-hero-glow {
+  position: absolute;
+  top: 15%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 800px;
+  height: 800px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(0, 200, 232, 0.12) 0%,
+    rgba(0, 200, 232, 0.05) 30%,
+    rgba(0, 168, 184, 0.02) 50%,
+    transparent 70%
+  );
+  animation: hero-glow-pulse 6s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Top sunlight source — bright glow where rays originate */
+.landing-top-light {
+  position: absolute;
+  top: -15%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  height: 500px;
+  background: radial-gradient(
+    ellipse 50% 60% at 50% 0%,
+    rgba(0, 200, 232, 0.25) 0%,
+    rgba(0, 200, 232, 0.12) 20%,
+    rgba(0, 168, 184, 0.05) 45%,
+    transparent 70%
+  );
+  animation: top-light-pulse 5s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 0;
+}
+
+@keyframes top-light-pulse {
+  0%, 100% { opacity: 0.8; }
+  50% { opacity: 1; }
+}
+
+@keyframes hero-glow-pulse {
+  0%, 100% { transform: translateX(-50%) scale(1); opacity: 0.8; }
+  50% { transform: translateX(-50%) scale(1.08); opacity: 1; }
+}
+
+/* Metallic shimmer text */
+@keyframes metallic-shimmer {
+  0% { background-position: 200% center; }
+  100% { background-position: -200% center; }
+}
+
+.metallic-shimmer {
+  background: linear-gradient(
+    90deg,
+    #00c8e8 0%,
+    #00e8a8 25%,
+    #00c8e8 50%,
+    #00a8d8 75%,
+    #00c8e8 100%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: metallic-shimmer 4s linear infinite;
+}
+
+/* Glassmorphism nav */
+.glass-nav {
+  background: rgba(10, 10, 15, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+/* Glow line horizontal */
+.glow-line-h {
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(0, 200, 232, 0.2) 20%,
+    rgba(0, 168, 184, 0.4) 50%,
+    rgba(0, 200, 232, 0.2) 80%,
+    transparent 100%
+  );
+}
+
+/* Hover lift for cards */
+.hover-lift {
+  transition: all 0.3s ease;
+}
+
+.hover-lift:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px rgba(0, 200, 232, 0.15);
+}
+
+/* Fade in up animation */
+@keyframes fade-in-up {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.8s ease-out forwards;
+}
+
+.animate-fade-in-up-delay-1 { animation-delay: 0.1s; opacity: 0; }
+.animate-fade-in-up-delay-2 { animation-delay: 0.2s; opacity: 0; }
+.animate-fade-in-up-delay-3 { animation-delay: 0.3s; opacity: 0; }
+.animate-fade-in-up-delay-4 { animation-delay: 0.4s; opacity: 0; }
+
+/* Sketch icon — very subtle background doodles */
+.sketch-icon {
+  position: absolute;
+  opacity: 0.03;
+  stroke: #00c8e8;
+  fill: none;
+  stroke-width: 1.5;
+  pointer-events: none;
+}

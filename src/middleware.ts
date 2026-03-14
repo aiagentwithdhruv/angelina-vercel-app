@@ -17,6 +17,7 @@ const PUBLIC_PATHS = [
   '/api/worker/tick',
   '/api/worker/reflect',
   '/api/worker/morning-brief',
+  '/api/ai/gemini-live-token',
 ];
 
 const SKIP_PREFIXES = ['/_next/', '/icons/', '/manifest.json', '/sw.js', '/favicon'];

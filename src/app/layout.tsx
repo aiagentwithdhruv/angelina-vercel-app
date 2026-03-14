@@ -22,8 +22,8 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'Angelina AI - Personal AI Operating System',
-  description: 'Your intelligent assistant for personal and business automation',
+  title: 'Angelina AI — Voice-First AI Productivity OS for Professionals',
+  description: 'The AI that remembers your work and gets things done. Voice-first, persistent memory, 30+ integrations. Check email, manage tasks, and take action — all by voice.',
   manifest: '/manifest.json',
   icons: {
     icon: [
