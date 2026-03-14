@@ -193,7 +193,8 @@ function CommandCenterInner() {
     });
   }, []);
 
-  // Load conversations on mount + auto-load last active conversation
+  // Load conversation list on mount — but do NOT auto-load last conversation
+  // Start fresh every time (user can pick a past convo from sidebar if needed)
   useEffect(() => {
     if (conversationsLoadedRef.current) return;
     conversationsLoadedRef.current = true;
@@ -203,36 +204,10 @@ function CommandCenterInner() {
       .then(data => {
         if (data.conversations) {
           setConversations(data.conversations);
-          // Auto-load last active conversation from localStorage, or most recent
-          const lastId = typeof window !== 'undefined' ? localStorage.getItem('angelina_active_conv') : null;
-          const target = lastId && data.conversations.find((c: any) => c.id === lastId)
-            ? lastId
-            : data.conversations[0]?.id;
-          if (target) {
-            // Inline load to avoid stale closure
-            setActiveConversationId(target);
-            setShowHero(false);
-            fetch(`/api/conversations?id=${target}`)
-              .then(r => r.json())
-              .then(d => {
-                if (d.messages && d.messages.length > 0) {
-                  setMessages(d.messages.map((m: any) => ({
-                    id: m.id,
-                    role: m.role,
-                    content: m.role === 'user' ? maskSensitive(m.content) : m.content,
-                    timestamp: new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                    model: m.model || undefined,
-                    toolUsed: m.tool_used || undefined,
-                  })));
-                  isFirstMessageRef.current = false;
-                }
-              })
-              .catch(() => {});
-          }
         }
       })
       .catch(() => {});
-  }, [maskSensitive]);
+  }, []);
 
   // Load a conversation's messages
   const loadConversation = useCallback(async (convId: string) => {

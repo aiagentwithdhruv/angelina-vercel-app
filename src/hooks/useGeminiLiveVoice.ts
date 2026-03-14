@@ -343,6 +343,12 @@ export function useGeminiLiveVoice(options: UseGeminiLiveVoiceOptions = {}): Use
             systemInstruction: {
               parts: [{ text: config.instructions }],
             },
+            // Affective Dialogue — detects emotion in user's voice and responds appropriately
+            realtimeInputConfig: {
+              automaticActivityDetection: {
+                disabled: false,
+              },
+            },
           },
         };
 

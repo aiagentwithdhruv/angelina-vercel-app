@@ -15,18 +15,18 @@ export function CalendarCard() {
   const [connected, setConnected] = useState(true);
 
   useEffect(() => {
-    fetch('/api/tools/google_calendar', {
+    fetch('/api/tools/check_calendar', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'list_events', maxResults: 5 }),
+      body: JSON.stringify({ days: 7 }),
     })
       .then((r) => {
         if (!r.ok) { setConnected(false); return null; }
         return r.json();
       })
       .then((d) => {
+        if (d?.success === false) { setConnected(false); return; }
         if (d?.events) setEvents(d.events.slice(0, 5));
-        else if (d?.error) setConnected(false);
       })
       .catch(() => setConnected(false));
   }, []);
