@@ -2,6 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { clsx } from 'clsx';
 import { Activity, ListTodo, LayoutDashboard, Settings, PanelLeftOpen, Brain } from 'lucide-react';
@@ -41,10 +42,10 @@ export const Header: React.FC<HeaderProps> = ({ isActive, onToggleSidebar, sideb
           {/* Logo — glows when Angelina is active */}
           <Link href="/" className="flex items-center gap-3">
             <div className={clsx(
-              'w-9 h-9 rounded-lg hero-glow-ring flex items-center justify-center',
+              'w-9 h-9 rounded-lg overflow-hidden',
               isActive && 'header-logo-active'
-            )} style={!isActive ? { animationDuration: '5s' } : undefined}>
-              <span className="text-lg font-bold hero-a-metallic font-orbitron">A</span>
+            )}>
+              <Image src="/angelina-logo.png" alt="Angelina AI" width={36} height={36} className="rounded-lg" />
             </div>
             <span className="font-orbitron text-lg font-bold metallic-text tracking-wider">ANGELINA</span>
           </Link>
