@@ -5,10 +5,9 @@ const config: CapacitorConfig = {
   appName: 'Angelina AI',
   webDir: 'out',
   server: {
-    // Load from HTTPS dev server (self-signed cert accepted in WebView)
-    url: 'https://10.33.183.235:3000',
+    url: 'https://angelina-vercel-clean.vercel.app',
     cleartext: true,
-    allowNavigation: ['10.33.183.235:3000', '*.openai.com'],
+    allowNavigation: ['angelina-vercel-clean.vercel.app', '*.vercel.app', '*.openai.com'],
   },
   android: {
     backgroundColor: '#0a0a0f',
