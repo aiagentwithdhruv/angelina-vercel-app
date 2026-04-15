@@ -61,6 +61,7 @@ export function useGeminiLiveVoice(options: UseGeminiLiveVoiceOptions = {}): Use
   const streamRef = useRef<MediaStream | null>(null);
   const processorRef = useRef<ScriptProcessorNode | null>(null);
   const playbackQueueRef = useRef<Int16Array[]>([]);
+  const micMutedRef = useRef(false);
   const isPlayingRef = useRef(false);
   const currentSourceRef = useRef<AudioBufferSourceNode | null>(null);
   const shouldStopPlaybackRef = useRef(false);
@@ -156,6 +157,7 @@ export function useGeminiLiveVoice(options: UseGeminiLiveVoiceOptions = {}): Use
     }
 
     isPlayingRef.current = false;
+    micMutedRef.current = false;
     setIsSpeaking(false);
   }, []);
 
@@ -164,9 +166,11 @@ export function useGeminiLiveVoice(options: UseGeminiLiveVoiceOptions = {}): Use
     try {
       const data = JSON.parse(event.data);
 
-      // Log all non-audio events for debugging
-      const hasAudio = data.serverContent?.modelTurn?.parts?.some((p: any) => p.inlineData?.mimeType?.startsWith("audio/"));
-      if (!hasAudio) {
+      // Log all events for debugging
+      const audioPartCount = data.serverContent?.modelTurn?.parts?.filter((p: any) => p.inlineData?.mimeType?.startsWith("audio/")).length || 0;
+      if (audioPartCount > 0) {
+        console.log("[GeminiLive] 🔊 Audio event: parts=" + audioPartCount);
+      } else {
         console.log("[GeminiLive] Event:", JSON.stringify(data).slice(0, 300));
       }
 
@@ -232,6 +236,7 @@ export function useGeminiLiveVoice(options: UseGeminiLiveVoiceOptions = {}): Use
             if (part.inlineData?.mimeType?.startsWith("audio/")) {
               const audioData = base64ToInt16(part.inlineData.data);
               playbackQueueRef.current.push(audioData);
+              micMutedRef.current = true; // gate mic immediately to prevent self-interruption
               playAudioQueue();
             }
             // Text transcript of what AI is saying
@@ -259,11 +264,9 @@ export function useGeminiLiveVoice(options: UseGeminiLiveVoiceOptions = {}): Use
           onTranscript?.(text, true);
         }
 
-        // Interrupted — user spoke while AI was speaking
+        // Interrupted — ignore false positives from server VAD; let queued audio finish
         if (sc.interrupted) {
-          console.log("[GeminiLive] Interrupted by user");
-          stopAudioPlayback();
-          aiTextRef.current = "";
+          console.log("[GeminiLive] Interrupted signal (ignored — letting queued audio finish)");
         }
       }
 
@@ -337,16 +340,20 @@ export function useGeminiLiveVoice(options: UseGeminiLiveVoiceOptions = {}): Use
                   },
                 },
               },
-              // Enable transcription of user speech
-              inputAudioTranscription: {},
+              thinkingConfig: {
+                includeThoughts: false,
+              },
             },
+            // Enable transcription of user speech (setup-level, not inside generationConfig)
+            inputAudioTranscription: {},
             systemInstruction: {
               parts: [{ text: config.instructions }],
             },
-            // Affective Dialogue — detects emotion in user's voice and responds appropriately
+            // Voice activity detection — defaults, but with longer silence window so we don't cut mid-sentence
             realtimeInputConfig: {
               automaticActivityDetection: {
                 disabled: false,
+                silenceDurationMs: 1200,
               },
             },
           },
@@ -362,25 +369,36 @@ export function useGeminiLiveVoice(options: UseGeminiLiveVoiceOptions = {}): Use
         wsRef.current = ws;
       };
 
-      // Wait for setupComplete before resolving
-      ws.onmessage = (event: MessageEvent) => {
+      // Wait for setupComplete before resolving — Gemini sends Blob payloads
+      const toText = async (data: any): Promise<string> => {
+        if (typeof data === "string") return data;
+        if (data instanceof Blob) return await data.text();
+        if (data instanceof ArrayBuffer) return new TextDecoder().decode(data);
+        return String(data);
+      };
+
+      ws.onmessage = async (event: MessageEvent) => {
         try {
-          const data = JSON.parse(event.data);
+          const text = await toText(event.data);
+          const data = JSON.parse(text);
           console.log("[GeminiLive] Pre-setup event:", JSON.stringify(data).slice(0, 300));
           if (data.setupComplete) {
             clearTimeout(timeout);
             console.log("[GeminiLive] Setup complete — ready for audio");
             setIsConnected(true);
             // Now switch to the main handler for all future messages
-            ws.onmessage = handleMessage;
+            ws.onmessage = async (ev) => {
+              const txt = await toText(ev.data);
+              handleMessage({ data: txt } as MessageEvent);
+            };
             settle(() => resolve());
             return;
           }
+          // Forward any non-setup messages to main handler with stringified data
+          handleMessage({ data: text } as MessageEvent);
         } catch (err) {
           console.error("[GeminiLive] Pre-setup parse error:", err);
         }
-        // Forward any non-setup messages to main handler
-        handleMessage(event);
       };
 
       ws.onerror = (evt) => {
@@ -467,6 +485,8 @@ export function useGeminiLiveVoice(options: UseGeminiLiveVoiceOptions = {}): Use
 
       processor.onaudioprocess = (e) => {
         if (wsRef.current?.readyState !== WebSocket.OPEN) return;
+        // Mute mic while AI is speaking to prevent self-interruption (echo loop)
+        if (micMutedRef.current) return;
 
         const inputData = e.inputBuffer.getChannelData(0);
         const downsampled = downsample(inputData, nativeRate, 16000);
